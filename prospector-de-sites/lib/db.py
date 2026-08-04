@@ -371,3 +371,122 @@ def lgpd_status(caminho_db, lead_slug):
         }
     aprovado_geral = len(checklist) > 0 and all(v['aprovado'] for v in checklist.values())
     return {'checklist': checklist, 'aprovado': aprovado_geral}
+
+
+def registrar_resposta(caminho_db, lead_slug):
+    """Marca a resposta mais recente esperada do lead como recebida — o
+    follow-up ainda não respondido mais recente, ou (se não houver
+    follow-up) a proposta mais recente ainda não respondida. Não persiste
+    transição de estado (`contato_realizado`/`follow_up -> negociacao`
+    fica a cargo de quem chamar, via `atualizar_estado`)."""
+    c = conectar(caminho_db)
+    row_fu = c.execute(
+        'SELECT id FROM followups WHERE lead_slug=? AND respondido=0 ORDER BY id DESC LIMIT 1',
+        (lead_slug,),
+    ).fetchone()
+    if row_fu:
+        c.execute('UPDATE followups SET respondido=1 WHERE id=?', (row_fu[0],))
+    else:
+        row_prop = c.execute(
+            'SELECT id FROM propostas WHERE lead_slug=? AND respondido_em IS NULL ORDER BY id DESC LIMIT 1',
+            (lead_slug,),
+        ).fetchone()
+        if row_prop:
+            c.execute('UPDATE propostas SET respondido_em=? WHERE id=?', (_agora(), row_prop[0]))
+    c.commit()
+    c.close()
+
+
+def registrar_followup(caminho_db, lead_slug, tentativa_numero):
+    """Grava uma tentativa de follow-up enviada agora."""
+    c = conectar(caminho_db)
+    c.execute(
+        'INSERT INTO followups (lead_slug, tentativa_numero, enviado_em, respondido) VALUES (?,?,?,0)',
+        (lead_slug, tentativa_numero, _agora()),
+    )
+    c.commit()
+    c.close()
+
+
+def listar_leads_para_followup(caminho_db, dias_sem_resposta=3, limite_tentativas=1):
+    """Retorna leads elegíveis para (mais) um follow-up: em
+    `contato_realizado` (proposta enviada, sem follow-up ainda) ou
+    `follow_up` (já com tentativa(s) anterior(es)), sem resposta detectada
+    há pelo menos `dias_sem_resposta` desde o último contato (proposta ou
+    follow-up anterior), e com menos de `limite_tentativas` follow-ups já
+    feitos. Cada item: {slug, status, tentativas_ja_feitas,
+    dias_sem_resposta}. Não dispara nada — só identifica candidatos; quem
+    chama decide se envia (agente `follow-up`) e persiste o resultado.
+    """
+    c = conectar(caminho_db)
+    c.row_factory = sqlite3.Row
+    candidatos = c.execute(
+        "SELECT * FROM leads WHERE status IN ('contato_realizado', 'follow_up')"
+    ).fetchall()
+    elegiveis = []
+    for lead in candidatos:
+        slug = lead['slug']
+        n_followups = c.execute(
+            'SELECT COUNT(*) FROM followups WHERE lead_slug=?', (slug,)
+        ).fetchone()[0]
+        if n_followups >= limite_tentativas:
+            continue
+        ultimo_followup = c.execute(
+            'SELECT enviado_em, respondido FROM followups WHERE lead_slug=? ORDER BY id DESC LIMIT 1',
+            (slug,),
+        ).fetchone()
+        if ultimo_followup:
+            if ultimo_followup['respondido']:
+                continue
+            referencia = ultimo_followup['enviado_em']
+        else:
+            proposta = c.execute(
+                'SELECT enviado_em, respondido_em FROM propostas WHERE lead_slug=? ORDER BY id DESC LIMIT 1',
+                (slug,),
+            ).fetchone()
+            if proposta is None or proposta['enviado_em'] is None or proposta['respondido_em'] is not None:
+                continue
+            referencia = proposta['enviado_em']
+        dias = c.execute(
+            "SELECT julianday('now','localtime') - julianday(?)", (referencia,)
+        ).fetchone()[0]
+        if dias >= dias_sem_resposta:
+            elegiveis.append({
+                'slug': slug, 'status': lead['status'],
+                'tentativas_ja_feitas': n_followups, 'dias_sem_resposta': round(dias, 1),
+            })
+    c.close()
+    return elegiveis
+
+
+def metricas_funil(caminho_db):
+    """Consolida métricas de funil a partir de propostas/followups/leads
+    (agente `analytics`, docs/AGENTES.md §23) — não interpreta os dados,
+    só consolida contagens/médias já existentes."""
+    c = conectar(caminho_db)
+    total_propostas = c.execute(
+        "SELECT COUNT(*) FROM propostas WHERE enviado_em IS NOT NULL"
+    ).fetchone()[0]
+    total_respondidas = c.execute(
+        "SELECT COUNT(*) FROM propostas WHERE respondido_em IS NOT NULL"
+    ).fetchone()[0]
+    tempo_medio_resposta_dias = c.execute(
+        "SELECT AVG(julianday(respondido_em) - julianday(enviado_em)) FROM propostas "
+        "WHERE enviado_em IS NOT NULL AND respondido_em IS NOT NULL"
+    ).fetchone()[0]
+    total_followups = c.execute('SELECT COUNT(*) FROM followups').fetchone()[0]
+    total_perdidos_sem_resposta = c.execute(
+        "SELECT COUNT(*) FROM leads WHERE status='perdido' AND motivo LIKE 'sem_resposta%'"
+    ).fetchone()[0]
+    total_fechados = c.execute("SELECT COUNT(*) FROM leads WHERE status='fechado'").fetchone()[0]
+    c.close()
+    taxa_resposta = (total_respondidas / total_propostas) if total_propostas else None
+    return {
+        'total_propostas_enviadas': total_propostas,
+        'total_respondidas': total_respondidas,
+        'taxa_resposta': taxa_resposta,
+        'tempo_medio_resposta_dias': tempo_medio_resposta_dias,
+        'total_followups_enviados': total_followups,
+        'total_perdidos_sem_resposta': total_perdidos_sem_resposta,
+        'total_fechados': total_fechados,
+    }

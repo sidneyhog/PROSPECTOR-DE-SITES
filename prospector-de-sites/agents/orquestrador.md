@@ -24,7 +24,7 @@ Nenhum agente especialista fala diretamente com outro. Toda entrada que um
 agente recebe vem de você; toda saída volta para você. Você nunca escreve
 diretamente no banco — isso é exclusividade do agente `crm`.
 
-## Estado desta especificação (Fase 6 de `docs/PLANO_IMPLEMENTACAO.md`)
+## Estado desta especificação (Fase 7 de `docs/PLANO_IMPLEMENTACAO.md`)
 
 Gatilhos implementados até agora:
 
@@ -48,11 +48,12 @@ Gatilhos implementados até agora:
   `urlNova`/`https_validado_em` já registrados) e com e-mail confirmado,
   aciona a cadeia **Comercial (Precificação + gate de LGPD)** abaixo, até
   `contato_realizado` ou um bloqueio (ver `commands/proposta.md`).
+- `/respostas` e `/followup` → acionam `follow-up` (**Follow-up e
+  Analytics**, abaixo), idealmente também via Routine agendada.
 
-Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Follow-up,
-Analytics, Relatórios) ainda não têm agente implementado em `agents/` —
-serão adicionados progressivamente nas Fases 7 e 8. Se um comando pedir
-uma etapa cujo agente ainda não existe em `agents/`, informe
+Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Relatórios)
+ainda não têm agente implementado em `agents/` — chegam na Fase 8. Se um
+comando pedir uma etapa cujo agente ainda não existe em `agents/`, informe
 ao operador que aquela etapa ainda está na fila de implementação (aponte
 para `docs/PLANO_IMPLEMENTACAO.md`) e não improvise um substituto nem
 execute a tarefa você mesmo.
@@ -194,6 +195,38 @@ automatizado por enquanto.
 acionáveis isoladamente para inspeção/teste antes de entrar em uso pleno;
 remover esta fase tira os dois agentes do fluxo sem afetar leads que já
 estão em `contato_realizado`.
+
+## Follow-up e Analytics (transições `contato_realizado/follow_up -> negociacao/follow_up/perdido`)
+
+Acione `follow-up` (`agents/follow-up.md`) a partir de `/respostas` (só
+verifica resposta) ou `/followup` (verifica resposta e, para quem
+continua sem resposta, envia o próximo follow-up ou move para `perdido`).
+O próprio agente consulta `db.listar_leads_para_followup` — você só
+precisa repassar os parâmetros de configuração (`diasSemResposta`,
+`limiteTentativas`, padrão herdado da v2: 3 dias, 1 tentativa).
+
+Para cada lead que `follow-up` reportar:
+
+- **Resposta detectada**: peça ao `crm` para persistir
+  `contato_realizado -> negociacao` ou `follow_up -> negociacao`.
+- **Follow-up enviado**: peça ao `crm` para persistir
+  `contato_realizado -> follow_up` ou `follow_up -> follow_up` (nova
+  tentativa).
+- **Limite esgotado**: peça ao `crm` para persistir
+  `follow_up -> perdido` com `motivo: "sem_resposta"`.
+
+Acione `analytics` (`agents/analytics.md`) sob demanda (o operador pedir
+métricas) ou ao final de `/respostas`, para reportar o panorama do funil.
+
+**Automação**: na primeira execução de `/respostas`, `follow-up` já
+oferece ao operador automatizar esse fluxo via Routine (ver a seção
+"Automação" de `agents/follow-up.md`). Se o operador aceitar, crie a
+Routine; se recusar ou a ferramenta não estiver disponível, o fluxo
+continua funcionando manualmente via `/respostas`/`/followup`.
+
+**Nota de reversibilidade (Fase 7):** a Routine, se criada, pode ser
+desabilitada a qualquer momento sem afetar dados já processados — os
+comandos manuais continuam disponíveis como fallback permanente.
 
 ## Como pedir ao agente CRM para persistir uma mudança de estado
 

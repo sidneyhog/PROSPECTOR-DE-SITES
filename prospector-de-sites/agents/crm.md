@@ -150,6 +150,28 @@ print(db.lgpd_status('<PASTA_CONECTADA>/prospector.db', '<slug>'))
 "
 ```
 
+Para follow-up e detecção de resposta (agente `follow-up`):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+print(db.listar_leads_para_followup('<PASTA_CONECTADA>/prospector.db', dias_sem_resposta=3, limite_tentativas=1))
+db.registrar_followup('<PASTA_CONECTADA>/prospector.db', '<slug>', tentativa_numero=1)
+db.registrar_resposta('<PASTA_CONECTADA>/prospector.db', '<slug>')  # quando detectar resposta no Gmail
+"
+```
+
+Para métricas de funil consolidadas (agente `analytics`):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+print(db.metricas_funil('<PASTA_CONECTADA>/prospector.db'))
+"
+```
+
 ## Estados válidos e transições (docs/CRM.md §2.1/§2.3)
 
 `encontrado · qualificado · em_analise · site_auditado · pagina_gerada ·

@@ -163,6 +163,19 @@ def _m6_propostas_e_lgpd(c):
         verificado_em TEXT NOT NULL)''')
 
 
+@_migracao(7)
+def _m7_followups(c):
+    """Fase 7 (docs/PLANO_IMPLEMENTACAO.md §10): tentativas de follow-up
+    por lead (RF-13), para não depender de o operador rodar /respostas e
+    /followup manualmente todo dia. Ver docs/ARQUITETURA_TECNICA.md §4.2."""
+    c.execute('''CREATE TABLE IF NOT EXISTS followups(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lead_slug TEXT NOT NULL REFERENCES leads(slug),
+        tentativa_numero INTEGER NOT NULL,
+        enviado_em TEXT NOT NULL,
+        respondido INTEGER NOT NULL DEFAULT 0)''')
+
+
 def versao_atual(c):
     c.execute("CREATE TABLE IF NOT EXISTS schema_version (versao INTEGER NOT NULL)")
     row = c.execute("SELECT versao FROM schema_version").fetchone()

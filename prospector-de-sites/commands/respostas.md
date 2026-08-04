@@ -1,25 +1,38 @@
 ---
-description: Verifica no Gmail se os clientes responderam as propostas e atualiza o dashboard
-argument-hint: "[nome do cliente] — opcional, padrão verifica todos com proposta na rua"
+description: Verifica no Gmail se os clientes responderam as propostas, atualiza o CRM e reporta o panorama do funil
+argument-hint: "[nome do cliente] — opcional, padrão verifica todos em contato_realizado/follow_up"
 ---
 
-Verifique respostas às propostas enviadas e atualize o pipeline.
+Acione o Orquestrador (`agents/orquestrador.md`) para processar este
+comando, seguindo a seção "Follow-up e Analytics" de
+`agents/orquestrador.md`.
 
 ## Passos
 
-1. Leia o banco `prospector.db` (ou `leads.md` como fallback): selecione os leads com status `proposta` (ou o cliente de `$ARGUMENTS`).
-2. Para cada lead, busque no Gmail via conector (`search_threads`) por conversas com o e-mail do lead a partir da `dataProposta` — query típica: `from:[email do lead] after:[dataProposta]` e também a thread da proposta original (`to:[email] [primeiras palavras do assunto]`).
-3. Classifique:
-   - **Respondeu**: existe mensagem DO lead na thread → atualize o banco (`status='respondeu'`, resumo curto da resposta em `obs`, ex.: "Respondeu 09/07: gostou, pediu valores").
-   - **Sem resposta**: mantenha `proposta` (o dashboard cuida do alerta de follow-up).
-4. Atualize conforme a skill `dashboard-leads` (upsert no banco + regenerar o snapshot do `dashboard.html`) e regenere a planilha do Google se houver mudanças.
-5. Resuma para o usuário: quem respondeu (com a essência de cada resposta), quem segue sem resposta e há quantos dias, e sugira as ações (responder o cliente, follow-up dos parados).
+1. Acionar `follow-up` (`agents/follow-up.md`) só para o passo "Verificar
+   respostas" (sem enviar novo follow-up): para cada lead
+   `contato_realizado`/`follow_up` (ou o de `$ARGUMENTS`), buscar no Gmail
+   e classificar resposta/sem resposta.
+2. Para quem respondeu: `crm` persiste a transição para `negociacao`.
+3. Acionar `analytics` (`agents/analytics.md`) para reportar o panorama
+   geral do funil (taxa de resposta, tempo médio, etc.).
 
 ## Automação (sugerir na primeira execução)
 
-Ofereça deixar isso automático com uma tarefa agendada do Cowork: "quer que eu verifique as respostas todo dia de manhã e deixe o dashboard atualizado?" — se aceitar, crie a tarefa agendada diária que executa este comando.
+Ofereça deixar isso automático via Routine agendada do ambiente Claude
+Code (ver a seção "Automação" de `agents/follow-up.md`) — se aceitar,
+crie a Routine para rodar este fluxo diariamente. Se recusar, ou a
+ferramenta não estiver disponível, siga com a execução manual.
 
 ## Regras
 
-- NUNCA marque `fechado` sozinho — fechamento envolve preço/acordo; apenas o usuário confirma (aí registre `valor`).
-- Não responda e-mails automaticamente: leitura e classificação apenas. Se o usuário quiser, ofereça rascunho de resposta.
+- NUNCA marque `fechado` sozinho — fechamento envolve contrato assinado
+  (Fase 8+); apenas o operador confirma.
+- Não responda e-mails automaticamente: leitura e classificação apenas.
+  Se o operador quiser, ofereça rascunho de resposta.
+
+## Saída
+
+Resuma: quem respondeu (com a essência de cada resposta), quem segue sem
+resposta e há quantos dias, e o panorama do funil (`analytics`). Sugira
+`/followup` para quem está elegível a um novo follow-up.
