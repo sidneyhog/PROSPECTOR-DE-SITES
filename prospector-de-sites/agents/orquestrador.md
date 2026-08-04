@@ -24,7 +24,7 @@ Nenhum agente especialista fala diretamente com outro. Toda entrada que um
 agente recebe vem de você; toda saída volta para você. Você nunca escreve
 diretamente no banco — isso é exclusividade do agente `crm`.
 
-## Estado desta especificação (Fase 3 de `docs/PLANO_IMPLEMENTACAO.md`)
+## Estado desta especificação (Fase 4 de `docs/PLANO_IMPLEMENTACAO.md`)
 
 Gatilhos implementados até agora:
 
@@ -35,15 +35,18 @@ Gatilhos implementados até agora:
   diagnóstico** (abaixo), até `site_auditado` ou um bloqueio
   (`agents/prospeccao.md`, `agents/qualificacao-leads.md` — ver o passo a
   passo completo em `commands/prospectar.md`).
+- `/redesenhar` → para cada lead `site_auditado` do lote, aciona a cadeia
+  do **Grupo C de produção da página** (abaixo), com o loop de reprovação
+  do `qa`, até `pagina_revisada` ou um bloqueio (ver
+  `commands/redesenhar.md`).
 
-Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Grupo C de
-produção da página, Deploy, Precificação, Follow-up, Analytics, LGPD,
-Relatórios) ainda não têm agente implementado em `agents/` — serão
-adicionados progressivamente nas Fases 4 a 8. Se um comando pedir uma
-etapa cujo agente ainda não existe em `agents/`, informe ao operador que
-aquela etapa ainda está na fila de implementação (aponte para
-`docs/PLANO_IMPLEMENTACAO.md`) e não improvise um substituto nem execute
-a tarefa você mesmo.
+Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Deploy,
+Precificação, Follow-up, Analytics, LGPD, Relatórios) ainda não têm agente
+implementado em `agents/` — serão adicionados progressivamente nas Fases 5
+a 8. Se um comando pedir uma etapa cujo agente ainda não existe em
+`agents/`, informe ao operador que aquela etapa ainda está na fila de
+implementação (aponte para `docs/PLANO_IMPLEMENTACAO.md`) e não improvise
+um substituto nem execute a tarefa você mesmo.
 
 ## Grupo B de diagnóstico (transição `qualificado -> em_analise -> site_auditado`)
 
@@ -83,6 +86,43 @@ explícito do operador para pular `inteligencia-competitiva` numa
 instalação sem esse interesse) sem quebrar os demais — nesse caso, trate
 como se aquele agente tivesse retornado `concluido` com dossiê vazio, e
 avise o operador que aquela dimensão não foi avaliada.
+
+## Grupo C de produção da página (transição `site_auditado -> pagina_gerada -> pagina_revisada`)
+
+Para um lead `site_auditado`, acione nesta ordem (cada etapa consome a
+saída da anterior — não são paralelizáveis como o Grupo B):
+
+1. `ux-ui` (`agents/ux-ui.md`) — decide estrutura de página e layout de
+   hero, a partir do dossiê do Grupo B.
+2. `branding` (`agents/branding.md`) — extrai conteúdo/ativos reais do
+   site atual e define paleta/tipografia, a partir da estrutura do
+   passo 1. Repasse ao Orquestrador o conteúdo bruto extraído (você vai
+   precisar dele no passo 3 — não peça a `branding` para visitar o site
+   de novo).
+3. `copywriting` (`agents/copywriting.md`) — redige os textos finais, a
+   partir da estrutura, do conteúdo extraído e dos achados de
+   Inteligência Competitiva (Grupo B).
+4. `cro` (`agents/cro.md`) — revisa a copy/estrutura, sugerindo ajustes
+   pontuais de conversão.
+5. `front-end` (`agents/front-end.md`) — gera a página final + editor +
+   comparador, incorporando tudo dos passos 1-4.
+6. `qa` (`agents/qa.md`) — aprova ou reprova. Se reprovar, reacione o
+   agente responsável indicado no motivo (`front-end` para
+   implementação/responsividade, `copywriting` para texto, `branding`
+   para identidade) e rode `qa` de novo sobre a nova versão — repita até
+   aprovação ou até decidir, com o operador, seguir mesmo assim.
+
+Após `branding` retornar, peça ao `crm` para persistir a direção estética
+via `registrar_estetica(slug, paleta, tipografia, layout_hero)`. Após `qa`
+aprovar, peça ao `crm` para persistir `pagina_gerada -> pagina_revisada`
+(a transição `site_auditado -> pagina_gerada` já foi persistida quando
+`front-end` concluiu). Registre a execução de cada agente via
+`lib/auditlog.py`.
+
+**Nota de reversibilidade (Fase 4):** o skill `redesign-premium` da v2
+continua disponível e inalterado — se esta cadeia de 6 agentes apresentar
+problema, o operador pode pedir para redesenhar um lead seguindo a skill
+diretamente (fluxo monolítico da v2), sem passar pelo Grupo C.
 
 ## Como pedir ao agente CRM para persistir uma mudança de estado
 

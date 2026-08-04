@@ -100,6 +100,18 @@ print(db.ultimo_gbp_snapshot('<PASTA_CONECTADA>/prospector.db', '<slug>'))
 "
 ```
 
+Para gravar ou consultar a direção estética usada num redesign (Grupo C —
+não repetir paleta/tipografia/layout de hero de clientes recentes):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+db.registrar_estetica('<PASTA_CONECTADA>/prospector.db', '<slug>', paleta='<paleta>', tipografia='<tipografia>', layout_hero='<layout>')
+print(db.listar_estetica_recente('<PASTA_CONECTADA>/prospector.db', limite=5))
+"
+```
+
 ## Estados válidos e transições (docs/CRM.md §2.1/§2.3)
 
 `encontrado · qualificado · em_analise · site_auditado · pagina_gerada ·

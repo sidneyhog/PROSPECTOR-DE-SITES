@@ -191,10 +191,15 @@ def registrar_auditoria(caminho_db, lead_slug, tipo, dados):
 
 def obter_auditorias(caminho_db, lead_slug):
     """Retorna o dossiê consolidado do lead: {tipo: {'dados': {...},
-    'criado_em': '...'}}, só a auditoria mais recente de cada tipo."""
+    'criado_em': '...'}}, só a auditoria mais recente de cada tipo.
+
+    Ordena por `id` (não por `criado_em`): o timestamp tem precisão de
+    segundo e várias auditorias podem ser gravadas no mesmo segundo — `id`
+    (autoincrement) é a única ordem estritamente confiável de inserção.
+    """
     c = conectar(caminho_db)
     rows = c.execute(
-        'SELECT tipo, dados_json, criado_em FROM auditorias WHERE lead_slug=? ORDER BY criado_em',
+        'SELECT tipo, dados_json, criado_em FROM auditorias WHERE lead_slug=? ORDER BY id',
         (lead_slug,),
     ).fetchall()
     c.close()
@@ -220,12 +225,44 @@ def registrar_gbp_snapshot(caminho_db, lead_slug, nota, num_avaliacoes, completu
 
 def ultimo_gbp_snapshot(caminho_db, lead_slug):
     """Retorna o snapshot de GBP mais recente do lead, ou None se nunca
-    capturado."""
+    capturado. Ordena por `id` (ver nota em `obter_auditorias` sobre
+    precisão de timestamp)."""
     c = conectar(caminho_db)
     c.row_factory = sqlite3.Row
     row = c.execute(
-        'SELECT * FROM gbp_snapshots WHERE lead_slug=? ORDER BY capturado_em DESC LIMIT 1',
+        'SELECT * FROM gbp_snapshots WHERE lead_slug=? ORDER BY id DESC LIMIT 1',
         (lead_slug,),
     ).fetchone()
     c.close()
     return dict(row) if row else None
+
+
+def registrar_estetica(caminho_db, lead_slug, paleta, tipografia, layout_hero):
+    """Grava a direção estética usada num redesign (Grupo C, Fase 4) —
+    consultada por `listar_estetica_recente` para os agentes `ux-ui` e
+    `branding` não repetirem paleta/tipografia/layout de hero de clientes
+    recentes (regra já vigente na v2 com `ui-ux-pro-max`)."""
+    c = conectar(caminho_db)
+    c.execute(
+        'INSERT INTO estetica_historico (lead_slug, paleta, tipografia, layout_hero, gerado_em) '
+        'VALUES (?,?,?,?,?)',
+        (lead_slug, paleta, tipografia, layout_hero, _agora()),
+    )
+    c.commit()
+    c.close()
+
+
+def listar_estetica_recente(caminho_db, limite=5):
+    """Retorna as últimas `limite` direções estéticas usadas (mais recente
+    primeiro), para checagem de variedade antes de definir a de um novo
+    lead. Ordena por `id` (ver nota em `obter_auditorias` sobre precisão
+    de timestamp)."""
+    c = conectar(caminho_db)
+    c.row_factory = sqlite3.Row
+    rows = c.execute(
+        'SELECT lead_slug, paleta, tipografia, layout_hero, gerado_em '
+        'FROM estetica_historico ORDER BY id DESC LIMIT ?',
+        (limite,),
+    ).fetchall()
+    c.close()
+    return [dict(r) for r in rows]

@@ -105,6 +105,23 @@ def _m3_auditorias_e_gbp(c):
         capturado_em TEXT NOT NULL)''')
 
 
+@_migracao(4)
+def _m4_estetica_historico(c):
+    """Fase 4 (docs/PLANO_IMPLEMENTACAO.md §7): histórico de estética usada
+    por lead (paleta, tipografia, layout de hero), para os agentes
+    `ux-ui` e `branding` não repetirem a direção estética de clientes
+    recentes. Ver docs/ARQUITETURA_TECNICA.md §4.2 (coluna `layout_hero`
+    é uma extensão aditiva ao schema ali documentado, para cobrir também a
+    regra de não repetir layout de hero, já vigente na v2)."""
+    c.execute('''CREATE TABLE IF NOT EXISTS estetica_historico(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lead_slug TEXT NOT NULL REFERENCES leads(slug),
+        paleta TEXT,
+        tipografia TEXT,
+        layout_hero TEXT,
+        gerado_em TEXT NOT NULL)''')
+
+
 def versao_atual(c):
     c.execute("CREATE TABLE IF NOT EXISTS schema_version (versao INTEGER NOT NULL)")
     row = c.execute("SELECT versao FROM schema_version").fetchone()
