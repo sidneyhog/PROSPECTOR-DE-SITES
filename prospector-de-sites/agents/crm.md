@@ -125,6 +125,31 @@ print(db.atualizar_campos('<PASTA_CONECTADA>/prospector.db', '<slug>', {'urlNova
 "
 ```
 
+Para registrar uma proposta comercial (agente `precificacao-proposta`) e
+marcá-la como enviada:
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+pid = db.registrar_proposta('<PASTA_CONECTADA>/prospector.db', '<slug>', valor_setup=1500.0, valor_manutencao=97.0, justificativa='...')
+print(db.marcar_proposta_enviada('<PASTA_CONECTADA>/prospector.db', '<slug>'))
+"
+```
+
+Para registrar o veredito de conformidade LGPD de cada campo de dado
+pessoal e consultar o status consolidado (gate obrigatório antes de
+qualquer envio externo — RF-16):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+db.registrar_lgpd_checklist('<PASTA_CONECTADA>/prospector.db', '<slug>', campo='email', finalidade='contato comercial B2B', retencao='ate o fim do relacionamento comercial ou solicitacao de exclusao', aprovado=True)
+print(db.lgpd_status('<PASTA_CONECTADA>/prospector.db', '<slug>'))
+"
+```
+
 ## Estados válidos e transições (docs/CRM.md §2.1/§2.3)
 
 `encontrado · qualificado · em_analise · site_auditado · pagina_gerada ·

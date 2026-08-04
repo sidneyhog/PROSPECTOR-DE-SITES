@@ -24,7 +24,7 @@ Nenhum agente especialista fala diretamente com outro. Toda entrada que um
 agente recebe vem de você; toda saída volta para você. Você nunca escreve
 diretamente no banco — isso é exclusividade do agente `crm`.
 
-## Estado desta especificação (Fase 5 de `docs/PLANO_IMPLEMENTACAO.md`)
+## Estado desta especificação (Fase 6 de `docs/PLANO_IMPLEMENTACAO.md`)
 
 Gatilhos implementados até agora:
 
@@ -44,11 +44,15 @@ Gatilhos implementados até agora:
   `crm` para persistir `urlNova`/`https_validado_em` via
   `atualizar_campos` (não é transição de estado — ver
   `commands/publicar.md`).
+- `/proposta` → para cada lead `pagina_revisada` publicado (com
+  `urlNova`/`https_validado_em` já registrados) e com e-mail confirmado,
+  aciona a cadeia **Comercial (Precificação + gate de LGPD)** abaixo, até
+  `contato_realizado` ou um bloqueio (ver `commands/proposta.md`).
 
-Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Precificação,
-Follow-up, Analytics, LGPD, Relatórios) ainda não têm agente implementado
-em `agents/` — serão adicionados progressivamente nas Fases 6 a 8. Se um
-comando pedir uma etapa cujo agente ainda não existe em `agents/`, informe
+Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Follow-up,
+Analytics, Relatórios) ainda não têm agente implementado em `agents/` —
+serão adicionados progressivamente nas Fases 7 e 8. Se um comando pedir
+uma etapa cujo agente ainda não existe em `agents/`, informe
 ao operador que aquela etapa ainda está na fila de implementação (aponte
 para `docs/PLANO_IMPLEMENTACAO.md`) e não improvise um substituto nem
 execute a tarefa você mesmo.
@@ -153,6 +157,43 @@ continua disponível para instalações que ainda não migraram para VPS
 própria (bloco `hostgator` do config, somente leitura para elas). Migrar é
 opcional e a critério do operador — rodar `/setup` de novo para preencher
 o bloco `vps`.
+
+## Comercial: Precificação + gate de LGPD (transição `pagina_revisada -> contato_realizado`)
+
+Para um lead `pagina_revisada` já publicado (com `urlNova`/
+`https_validado_em` registrados) e com e-mail confirmado, acione nesta
+ordem:
+
+1. `precificacao-proposta` (`agents/precificacao-proposta.md`) — define
+   valor de setup/manutenção a partir do dossiê e da Inteligência
+   Competitiva. Peça ao `crm` para persistir via
+   `registrar_proposta(slug, valor_setup, valor_manutencao, justificativa)`.
+2. `copywriting` (já acionado na Fase 4 para o texto da página) — reuse
+   o mesmo agente para redigir o e-mail de proposta, seguindo a skill
+   `proposta-email` (rapport, sem preço, checklist anti-spam). Isso não é
+   uma nova invocação genérica: peça a ele especificamente o e-mail,
+   passando os achados relevantes (elogio verificável, defeito objetivo
+   do site antigo, link da página-capa).
+3. **`lgpd` (gate obrigatório e bloqueante, RF-16)** (`agents/lgpd.md`) —
+   monte o payload EXATO de dados pessoais que vai para fora (tipicamente
+   `nome`, `email`, `whatsapp` usados no e-mail/assinatura) e peça o
+   veredito. **Se `lgpd` bloquear, PARE aqui** — não envie o e-mail, não
+   persista a transição de estado, reporte ao operador os motivos
+   específicos por campo.
+4. Se `lgpd` aprovar: envie o e-mail via conector Gmail (rascunho ou envio
+   direto, conforme o modo do config), peça ao `crm` para persistir
+   `pagina_revisada -> contato_realizado` e para marcar a proposta como
+   enviada via `marcar_proposta_enviada(slug)`.
+
+Registre a execução de cada agente via `lib/auditlog.py`. Leads sem e-mail
+confirmado não entram nesta cadeia — a abordagem para eles continua
+manual via WhatsApp (mesmo comportamento da v2), fora do gate de LGPD
+automatizado por enquanto.
+
+**Nota de reversibilidade (Fase 6):** o gate de LGPD e a Precificação são
+acionáveis isoladamente para inspeção/teste antes de entrar em uso pleno;
+remover esta fase tira os dois agentes do fluxo sem afetar leads que já
+estão em `contato_realizado`.
 
 ## Como pedir ao agente CRM para persistir uma mudança de estado
 

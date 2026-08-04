@@ -32,7 +32,8 @@ import migrations
 CAMPOS_LEAD = ['slug', 'nome', 'nicho', 'cidade', 'nota', 'avaliacoes', 'email',
                'telefone', 'whatsapp', 'siteAntigo', 'motivo', 'status', 'urlNova',
                'dataProposta', 'valor', 'obs', 'contratoStatus', 'contratoEm',
-               'manutencao', 'pago', 'docCliente', 'endCliente', 'https_validado_em']
+               'manutencao', 'pago', 'docCliente', 'endCliente', 'https_validado_em',
+               'valor_setup']
 
 # Máquina de estados (docs/CRM.md §2.2/§2.3): de_status -> {para_status permitidos}.
 # None = criação do lead (nenhum estado anterior ainda).
@@ -295,3 +296,78 @@ def atualizar_campos(caminho_db, slug, dados, agente):
     lead = dict(c.execute('SELECT * FROM leads WHERE slug=?', (slug,)).fetchone())
     c.close()
     return {'ok': True, 'lead': lead}
+
+
+def registrar_proposta(caminho_db, lead_slug, valor_setup, valor_manutencao, justificativa):
+    """Grava uma proposta comercial (agente `precificacao-proposta`),
+    ainda não enviada (`enviado_em` fica NULL até `marcar_proposta_enviada`).
+    Também espelha `valor_setup` em `leads` (mesmo padrão já usado por
+    `manutencao`, para leitura rápida no dashboard). Retorna o id da
+    proposta criada."""
+    c = conectar(caminho_db)
+    c.execute(
+        'INSERT INTO propostas (lead_slug, valor_setup, valor_manutencao, justificativa, criado_em) '
+        'VALUES (?,?,?,?,?)',
+        (lead_slug, valor_setup, valor_manutencao, justificativa, _agora()),
+    )
+    proposta_id = c.execute('SELECT last_insert_rowid()').fetchone()[0]
+    c.execute('UPDATE leads SET valor_setup=?, manutencao=? WHERE slug=?',
+              (valor_setup, valor_manutencao, lead_slug))
+    c.commit()
+    c.close()
+    return proposta_id
+
+
+def marcar_proposta_enviada(caminho_db, lead_slug):
+    """Marca a proposta mais recente (ainda não enviada) do lead como
+    enviada agora. Retorna {'ok': True} ou {'ok': False, 'motivo': '...'}
+    se não houver proposta pendente de envio."""
+    c = conectar(caminho_db)
+    row = c.execute(
+        'SELECT id FROM propostas WHERE lead_slug=? AND enviado_em IS NULL ORDER BY id DESC LIMIT 1',
+        (lead_slug,),
+    ).fetchone()
+    if row is None:
+        c.close()
+        return {'ok': False, 'motivo': 'nenhuma proposta pendente de envio para %s' % lead_slug}
+    c.execute('UPDATE propostas SET enviado_em=? WHERE id=?', (_agora(), row[0]))
+    c.commit()
+    c.close()
+    return {'ok': True}
+
+
+def registrar_lgpd_checklist(caminho_db, lead_slug, campo, finalidade, retencao, aprovado):
+    """Grava o veredito de conformidade LGPD de um campo de dado pessoal
+    (agente `lgpd`). Cada chamada grava uma NOVA linha (histórico); só a
+    mais recente por campo conta (ver `lgpd_status`)."""
+    c = conectar(caminho_db)
+    c.execute(
+        'INSERT INTO lgpd_checklist (lead_slug, campo, finalidade, retencao, aprovado, verificado_em) '
+        'VALUES (?,?,?,?,?,?)',
+        (lead_slug, campo, finalidade, retencao, 1 if aprovado else 0, _agora()),
+    )
+    c.commit()
+    c.close()
+
+
+def lgpd_status(caminho_db, lead_slug):
+    """Retorna o checklist LGPD consolidado do lead: {'checklist':
+    {campo: {finalidade, retencao, aprovado, verificado_em}}, 'aprovado':
+    bool} — `aprovado` só é True se houver ao menos um campo verificado e
+    TODOS estiverem aprovados. Ordena por `id` (ver nota em
+    `obter_auditorias` sobre precisão de timestamp)."""
+    c = conectar(caminho_db)
+    rows = c.execute(
+        'SELECT campo, finalidade, retencao, aprovado, verificado_em '
+        'FROM lgpd_checklist WHERE lead_slug=? ORDER BY id',
+        (lead_slug,),
+    ).fetchall()
+    c.close()
+    checklist = {}
+    for campo, finalidade, retencao, aprovado, verificado_em in rows:
+        checklist[campo] = {
+            'finalidade': finalidade, 'retencao': retencao,
+            'aprovado': bool(aprovado), 'verificado_em': verificado_em,
+        }
+    aprovado_geral = len(checklist) > 0 and all(v['aprovado'] for v in checklist.values())
+    return {'checklist': checklist, 'aprovado': aprovado_geral}

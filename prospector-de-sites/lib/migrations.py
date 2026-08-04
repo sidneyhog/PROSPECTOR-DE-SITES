@@ -134,6 +134,35 @@ def _m5_https_validado(c):
     _add_coluna_se_faltando(c, 'leads', 'https_validado_em', 'TEXT')
 
 
+@_migracao(6)
+def _m6_propostas_e_lgpd(c):
+    """Fase 6 (docs/PLANO_IMPLEMENTACAO.md §9): separa preço (tabela
+    `propostas`, agente `precificacao-proposta`) de redação (agente
+    `copywriting`, Fase 4), e introduz o gate de conformidade LGPD
+    obrigatório antes de qualquer envio externo (RF-16). Ver
+    docs/ARQUITETURA_TECNICA.md §4.2. `leads.valor_setup` é um espelho
+    denormalizado do valor da proposta mais recente, para leitura rápida
+    no dashboard (mesmo padrão já usado por `manutencao`)."""
+    _add_coluna_se_faltando(c, 'leads', 'valor_setup', 'REAL')
+    c.execute('''CREATE TABLE IF NOT EXISTS propostas(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lead_slug TEXT NOT NULL REFERENCES leads(slug),
+        valor_setup REAL,
+        valor_manutencao REAL,
+        justificativa TEXT,
+        criado_em TEXT NOT NULL,
+        enviado_em TEXT,
+        respondido_em TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS lgpd_checklist(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lead_slug TEXT NOT NULL REFERENCES leads(slug),
+        campo TEXT NOT NULL,
+        finalidade TEXT,
+        retencao TEXT,
+        aprovado INTEGER NOT NULL DEFAULT 0,
+        verificado_em TEXT NOT NULL)''')
+
+
 def versao_atual(c):
     c.execute("CREATE TABLE IF NOT EXISTS schema_version (versao INTEGER NOT NULL)")
     row = c.execute("SELECT versao FROM schema_version").fetchone()
