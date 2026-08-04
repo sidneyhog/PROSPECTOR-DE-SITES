@@ -60,6 +60,31 @@ def _m1_schema_leads_base(c):
         _add_coluna_se_faltando(c, 'leads', col, tipo)
 
 
+@_migracao(2)
+def _m2_interacoes_e_execucoes(c):
+    """Fase 1 (docs/PLANO_IMPLEMENTACAO.md §4): histórico de transições de
+    estado do lead (auditabilidade — RNF-04/RNF-10) e log de execução de
+    agentes (observabilidade — RNF-10). Ver docs/ARQUITETURA_TECNICA.md §4.2."""
+    c.execute('''CREATE TABLE IF NOT EXISTS interacoes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lead_slug TEXT NOT NULL REFERENCES leads(slug),
+        de_status TEXT,
+        para_status TEXT NOT NULL,
+        agente TEXT NOT NULL,
+        motivo TEXT,
+        criado_em TEXT NOT NULL)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS execucoes_agentes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lead_slug TEXT REFERENCES leads(slug),
+        agente TEXT NOT NULL,
+        status TEXT NOT NULL,
+        resumo TEXT,
+        criterios_pendentes TEXT,
+        referencias TEXT,
+        iniciado_em TEXT NOT NULL,
+        concluido_em TEXT)''')
+
+
 def versao_atual(c):
     c.execute("CREATE TABLE IF NOT EXISTS schema_version (versao INTEGER NOT NULL)")
     row = c.execute("SELECT versao FROM schema_version").fetchone()
