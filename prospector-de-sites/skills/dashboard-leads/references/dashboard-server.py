@@ -5,6 +5,7 @@ Uso: python dashboard-server.py  (ou duplo clique em iniciar-dashboard.bat)
 Abre em http://localhost:8765 — edições, exclusões e drag&drop salvam no prospector.db"""
 import json, sqlite3, os, sys, webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+import migrations
 
 PASTA = os.path.dirname(os.path.abspath(__file__))
 os.chdir(PASTA)
@@ -21,15 +22,7 @@ CAMPOS = ['slug','nome','nicho','cidade','nota','avaliacoes','email','telefone',
 
 def conexao():
     c = sqlite3.connect(DB)
-    c.execute('''CREATE TABLE IF NOT EXISTS leads(
-        slug TEXT PRIMARY KEY, nome TEXT, nicho TEXT, cidade TEXT, nota REAL, avaliacoes INTEGER,
-        email TEXT, telefone TEXT, whatsapp TEXT, siteAntigo TEXT, motivo TEXT,
-        status TEXT DEFAULT 'novo', urlNova TEXT, dataProposta TEXT, valor REAL, obs TEXT,
-        contratoStatus TEXT DEFAULT 'pendente', contratoEm TEXT, manutencao REAL, pago INTEGER DEFAULT 0,
-        atualizado TEXT DEFAULT (datetime('now','localtime')))''')
-    for col, tipo in [('contratoStatus',"TEXT DEFAULT 'pendente'"),('contratoEm','TEXT'),('manutencao','REAL'),('pago','INTEGER DEFAULT 0'),('docCliente','TEXT'),('endCliente','TEXT')]:
-        try: c.execute('ALTER TABLE leads ADD COLUMN %s %s' % (col, tipo))
-        except sqlite3.OperationalError: pass
+    migrations.aplicar(c)
     return c
 
 def importar_snapshot():

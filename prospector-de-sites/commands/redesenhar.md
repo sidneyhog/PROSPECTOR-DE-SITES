@@ -1,47 +1,75 @@
 ---
-description: Redesenha os sites dos leads com estética premium (lote de 5 ou mais)
-argument-hint: "[URLs ou nomes dos leads] — opcional, usa os 5+ melhores de leads.md"
+description: Redesenha os sites dos leads auditados com estética premium, via a cadeia de agentes do Grupo C (lote de 5 ou mais)
+argument-hint: "[URLs ou nomes dos leads] — opcional, usa os 5+ melhores leads site_auditado"
 ---
 
-Redesenhe as páginas dos leads seguindo a skill `redesign-premium`. Ela é obrigatória — leia a skill ANTES de escrever qualquer HTML.
+Acione o Orquestrador (`agents/orquestrador.md`) para processar este
+comando, seguindo a seção "Grupo C de produção da página" de
+`agents/orquestrador.md`.
 
 ## Seleção dos clientes
 
-1. Leia `prospector-config.json` e `leads.md` na pasta conectada.
-2. Se `$ARGUMENTS` trouxer URLs ou nomes, use-os. Senão, selecione os leads com status `novo` mais bem ranqueados — **mínimo de 5 clientes por lote** (se houver menos de 5 leads novos, use todos e avise que rodar `/prospectar` de novo aumenta o lote).
-3. Confirme a lista com o usuário antes de começar.
+1. Ler `prospector-config.json` na pasta conectada.
+2. Se `$ARGUMENTS` trouxer URLs ou nomes, usar esses leads (devem estar
+   com status `site_auditado`; se algum não estiver, oriente a rodar
+   `/prospectar` até completar o diagnóstico dele antes de incluí-lo
+   aqui). Senão, selecionar os leads `site_auditado` mais bem ranqueados
+   via o agente `crm` — mínimo de 5 clientes por lote (se houver menos de
+   5, use todos e avise que rodar `/prospectar` de novo aumenta o lote).
+3. Confirmar a lista com o usuário antes de começar.
 
 ## Para cada cliente do lote
 
-1. **Extração**: abra o site original no Claude in Chrome (o sandbox costuma bloquear fetch direto a esses domínios). Extraia TODO o conteúdo real: textos, serviços, formação/credenciais, endereço, telefone/WhatsApp, e-mail, redes sociais, horários, paleta de cores e — OBRIGATÓRIO — as URLs reais do logo e das fotos (via JavaScript no navegador: colete `img.currentSrc` de todas as imagens; se forem lazy-load, role a página até o fim antes de coletar). Tire um screenshot do site original para referência.
-2. **Redesign**: aplique a skill `redesign-premium` na íntegra. Regra de ouro: NADA inventado — é uma nova versão da página do cliente, não uma página nova. O logo original e as fotos originais DEVEM aparecer na página nova (se o cliente não tem site/logo, use composição tipográfica — nunca invente logo).
-3. **Salvar** na pasta conectada, com o nome do cliente no arquivo para fácil identificação:
-   - `sites/[slug]/[slug].html` — a página final (arquivo único, autocontido, responsivo)
-   - `sites/[slug]/[slug]-editor.html` — a MESMA página com a camada de edição visual injetada antes de `</body>` (script completo em `references/editor-visual.md` da skill `redesign-premium`). Gere SEMPRE, sem esperar o usuário pedir.
-4. **Comparador (OBRIGATÓRIO — não é opcional)**: crie/atualize `comparar.html` na RAIZ da pasta conectada usando o template pronto `references/comparador-template.html` da skill `redesign-premium`: copie o template, substitua `__CLIENTES__` pelo array JSON dos clientes (formato documentado no rodapé do próprio template). Se `comparar.html` já existir, LEIA o array atual e acrescente os novos clientes no topo — nunca perca os antigos.
-5. **Atualizar** o status do lead em `leads.md` para `redesenhado` e o `dashboard.html` (skill `dashboard-leads`): `status: redesenhado`.
+Rodar a cadeia completa do Grupo C (`agents/orquestrador.md`, seção
+correspondente): `ux-ui` → `branding` → `copywriting` → `cro` →
+`front-end` → `qa` (com loop de reprovação). Registrar cada execução via
+`lib/auditlog.py` e persistir as transições de estado
+(`site_auditado -> pagina_gerada -> pagina_revisada`) e a direção
+estética via o agente `crm`, conforme descrito em `agents/orquestrador.md`.
+
+Se `qa` reprovar mais de 2 vezes seguidas para o mesmo lead, pare o loop
+automático, reporte ao operador os motivos das reprovações e peça decisão
+manual (seguir mesmo assim, ou revisar manualmente antes de continuar) —
+não insista indefinidamente sem visibilidade do operador.
 
 ## Checklist de saída (bloqueante)
 
-Antes de apresentar qualquer resultado ao usuário, confirme que TODOS estes arquivos existem — se faltar algum, gere-o agora:
+Antes de apresentar qualquer resultado ao usuário, confirme que TODOS
+estes arquivos existem para cada cliente aprovado por `qa` — se faltar
+algum, isso é um bug da cadeia (reporte, não gere manualmente por fora
+dela):
 
-- [ ] `sites/[slug]/[slug].html` para CADA cliente do lote
-- [ ] `sites/[slug]/[slug]-editor.html` para CADA cliente do lote
+- [ ] `sites/[slug]/[slug].html`
+- [ ] `sites/[slug]/[slug]-editor.html`
 - [ ] `comparar.html` na raiz, com abas para TODOS os clientes do lote
-
-Um redesign sem o editor ou sem o comparador é entrega incompleta — o usuário usa o comparador na proposta e no conteúdo dele.
-
-## Verificação do lote
-
-Antes de encerrar, para cada página criada: renderize/revise o HTML procurando textos placeholder esquecidos, links quebrados, seções vazias e problemas de contraste. Todos os CTAs devem apontar para o WhatsApp ou contato REAL do cliente.
+      (antigos e novos)
 
 ## Saída (TRAVADA — siga exatamente este formato)
 
 A entrega final ao usuário DEVE conter, nesta ordem, sem exceção:
 
-1. **Cards de arquivo apresentados no chat** (via ferramenta de apresentação de arquivos): o `comparar.html` PRIMEIRO, depois a página e o editor de cada cliente. Se você não apresentou o card do `comparar.html`, a entrega está errada — apresente antes de escrever qualquer resumo.
-2. **Resumo de 1 linha por cliente** (o que melhorou).
-3. **Confirmação do dashboard**: frase explícita "Dashboard atualizado: [N] leads com status redesenhado" após atualizar o banco/dashboard conforme a skill `dashboard-leads` (se a pasta ainda não tem dashboard, CRIE-o agora pela skill — pasta nova nunca é desculpa para pular).
-4. Orientação curta: `comparar.html` = antes/depois lado a lado · `[slug]-editor.html` = editar textos/imagens · próximo passo `/publicar`.
+1. **Cards de arquivo apresentados no chat** (via ferramenta de
+   apresentação de arquivos): o `comparar.html` PRIMEIRO, depois a página
+   e o editor de cada cliente aprovado.
+2. **Resumo de 1 linha por cliente** (o que melhorou) + status de `qa`
+   (aprovado direto, ou aprovado após N reprovações, ou pendente de
+   decisão manual).
+3. **Confirmação do dashboard**: "Dashboard atualizado: [N] leads em
+   pagina_revisada" — o dashboard reflete o `prospector.db` via
+   `dashboard-server.py`/`dashboard-leads`.
+4. Orientação curta: `comparar.html` = antes/depois lado a lado ·
+   `[slug]-editor.html` = editar textos/imagens · próximo passo:
+   `/publicar` (a implementação do agente `deploy` é da Fase 5 — até lá,
+   `/publicar` segue o fluxo anterior à v3, via HostGator/cPanel).
 
-É PROIBIDO encerrar a resposta sem os itens 1 e 3. Se qualquer arquivo do checklist não existir, gere-o antes de responder.
+É PROIBIDO encerrar a resposta sem os itens 1 e 3.
+
+## Reversibilidade (Fase 4)
+
+O skill `redesign-premium` da v2 permanece disponível e inalterado. Se a
+cadeia de agentes do Grupo C apresentar problema para um cliente
+específico, o operador pode pedir explicitamente para redesenhar aquele
+cliente seguindo a skill `redesign-premium` diretamente (fluxo monolítico
+da v2), sem passar pelo Grupo C — nesse caso, avise que a página resultante
+não terá passado pelo `qa` nem pelo dossiê do Grupo B, e ofereça rodar o
+`qa` manualmente sobre o resultado depois.
