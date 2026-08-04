@@ -62,6 +62,44 @@ print(resultado)
 Devolva esse resultado ao Orquestrador tal como veio — não reinterprete
 nem tente "consertar" uma transição rejeitada.
 
+Para gravar um dossiê de diagnóstico do Grupo B (um agente de
+`docs/AGENTES.md` §5-§12 devolveu `dados_para_crm` com o achado; você só
+persiste, nunca reinterpreta o conteúdo):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+db.registrar_auditoria('<PASTA_CONECTADA>/prospector.db', '<slug>', '<tipo>', {'achado': 'valor'})
+"
+```
+
+`<tipo>` é um de: `tecnica`, `seo`, `seo_local`, `performance`, `cwv`,
+`acessibilidade`, `inteligencia_competitiva`, `gbp`.
+
+Para obter o dossiê consolidado de um lead (usado pelo Orquestrador para
+verificar se o Grupo B já rodou por completo, e pelos agentes do Grupo C
+mais adiante):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+print(db.obter_auditorias('<PASTA_CONECTADA>/prospector.db', '<slug>'))
+"
+```
+
+Para gravar ou consultar um snapshot de Google Business Profile (RF-08):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+db.registrar_gbp_snapshot('<PASTA_CONECTADA>/prospector.db', '<slug>', nota=4.8, num_avaliacoes=62, completude_percentual=80.0)
+print(db.ultimo_gbp_snapshot('<PASTA_CONECTADA>/prospector.db', '<slug>'))
+"
+```
+
 ## Estados válidos e transições (docs/CRM.md §2.1/§2.3)
 
 `encontrado · qualificado · em_analise · site_auditado · pagina_gerada ·

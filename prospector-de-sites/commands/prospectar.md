@@ -29,10 +29,20 @@ comando.
    c. Acionar o agente `crm` para persistir o veredito:
       `encontrado -> qualificado` (com o motivo e o e-mail encontrado) ou
       `encontrado -> perdido` (com `motivo=nao_qualificado: ...`).
-6. Ao final, gerar as saídas voltadas ao usuário descritas abaixo. A fonte
-   de verdade do funil passa a ser o `prospector.db` (via CRM) — a
-   planilha e o `dashboard.html` são espelhos para consumo humano,
-   regenerados a partir do que está no banco.
+6. Ao final da busca, se pelo menos um candidato ficou `qualificado`,
+   pergunte ao operador se deseja rodar agora o diagnóstico técnico
+   completo (Grupo B: auditoria técnica, SEO, SEO local, performance, Core
+   Web Vitals, acessibilidade, inteligência competitiva, Google Business
+   Profile) para os leads recém-qualificados deste lote — padrão sugerido:
+   sim. Se confirmado, siga a seção "Grupo B de diagnóstico" de
+   `agents/orquestrador.md` para cada lead qualificado, até
+   `site_auditado` ou um bloqueio reportável. Se o operador preferir
+   revisar a lista antes, pule esta etapa — o lead fica `qualificado` e
+   pode ser levado a `em_analise` depois, reacionando o mesmo fluxo.
+7. Gerar as saídas voltadas ao usuário descritas abaixo. A fonte de
+   verdade do funil passa a ser o `prospector.db` (via CRM) — a planilha e
+   o `dashboard.html` são espelhos para consumo humano, regenerados a
+   partir do que está no banco.
 
 Se qualquer agente retornar `bloqueado`/`erro`/`precisa_input_humano` para
 um candidato específico, registre e siga para o próximo candidato — não
@@ -59,6 +69,8 @@ não resolvidos no resumo final ao operador.
    estiver rodando, já reflete o banco em tempo real via `/api/leads`).
 
 A entrega final DEVE incluir a confirmação explícita "Dashboard atualizado:
-[N] leads (X qualificados, Y perdidos)". Mostre a tabela ao usuário com o
-link da planilha e do `dashboard.html`, e sugira o próximo passo:
-`/redesenhar` para os melhores leads qualificados.
+[N] leads (X qualificados, Y perdidos, Z auditados)". Mostre a tabela ao
+usuário com o link da planilha e do `dashboard.html`, e sugira o próximo
+passo: `/redesenhar` para os leads já `site_auditado` (a implementação do
+Grupo C de produção da página é da Fase 4 — até lá, `/redesenhar` segue o
+fluxo anterior à v3).

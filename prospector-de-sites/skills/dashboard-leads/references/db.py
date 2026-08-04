@@ -22,9 +22,6 @@ reconhecida ainda — `atualizar_estado` vai bloquear qualquer tentativa
 sobre eles até a Fase 2 definir o mapeamento de migração desses status
 legados para o novo pipeline.
 
-`registrar_auditoria` (dossiês do Grupo B) fica para a Fase 3
-(docs/PLANO_IMPLEMENTACAO.md §6), junto com a tabela `auditorias` — não
-implementado aqui para não introduzir uma tabela sem consumidor ainda.
 """
 import json
 import sqlite3
@@ -170,3 +167,65 @@ def registrar_execucao(caminho_db, agente, lead_slug, status, resumo,
     )
     c.commit()
     c.close()
+
+
+def registrar_auditoria(caminho_db, lead_slug, tipo, dados):
+    """Grava um dossiê de diagnóstico do Grupo B (docs/AGENTES.md §5-§12).
+    `tipo` é um de: tecnica|seo|seo_local|performance|cwv|acessibilidade|
+    inteligencia_competitiva|gbp. `dados` é um dict serializável em JSON.
+
+    Cada chamada grava uma NOVA linha (histórico completo, nunca
+    sobrescreve) — `obter_auditorias` devolve só a mais recente por tipo.
+    A decisão de reaproveitar uma auditoria recente em vez de reprocessar
+    (cache — docs/ARQUITETURA_TECNICA.md §6) é do Orquestrador, não desta
+    função.
+    """
+    c = conectar(caminho_db)
+    c.execute(
+        'INSERT INTO auditorias (lead_slug, tipo, dados_json, criado_em) VALUES (?,?,?,?)',
+        (lead_slug, tipo, json.dumps(dados, ensure_ascii=False), _agora()),
+    )
+    c.commit()
+    c.close()
+
+
+def obter_auditorias(caminho_db, lead_slug):
+    """Retorna o dossiê consolidado do lead: {tipo: {'dados': {...},
+    'criado_em': '...'}}, só a auditoria mais recente de cada tipo."""
+    c = conectar(caminho_db)
+    rows = c.execute(
+        'SELECT tipo, dados_json, criado_em FROM auditorias WHERE lead_slug=? ORDER BY criado_em',
+        (lead_slug,),
+    ).fetchall()
+    c.close()
+    dossie = {}
+    for tipo, dados_json, criado_em in rows:
+        dossie[tipo] = {'dados': json.loads(dados_json), 'criado_em': criado_em}
+    return dossie
+
+
+def registrar_gbp_snapshot(caminho_db, lead_slug, nota, num_avaliacoes, completude_percentual):
+    """Grava um snapshot do Google Business Profile do lead (RF-08),
+    comparável a snapshots anteriores do mesmo lead via
+    `ultimo_gbp_snapshot`."""
+    c = conectar(caminho_db)
+    c.execute(
+        'INSERT INTO gbp_snapshots (lead_slug, nota, num_avaliacoes, completude_percentual, capturado_em) '
+        'VALUES (?,?,?,?,?)',
+        (lead_slug, nota, num_avaliacoes, completude_percentual, _agora()),
+    )
+    c.commit()
+    c.close()
+
+
+def ultimo_gbp_snapshot(caminho_db, lead_slug):
+    """Retorna o snapshot de GBP mais recente do lead, ou None se nunca
+    capturado."""
+    c = conectar(caminho_db)
+    c.row_factory = sqlite3.Row
+    row = c.execute(
+        'SELECT * FROM gbp_snapshots WHERE lead_slug=? ORDER BY capturado_em DESC LIMIT 1',
+        (lead_slug,),
+    ).fetchone()
+    c.close()
+    return dict(row) if row else None

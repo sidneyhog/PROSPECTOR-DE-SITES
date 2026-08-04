@@ -24,24 +24,65 @@ Nenhum agente especialista fala diretamente com outro. Toda entrada que um
 agente recebe vem de você; toda saída volta para você. Você nunca escreve
 diretamente no banco — isso é exclusividade do agente `crm`.
 
-## Estado desta especificação (Fase 2 de `docs/PLANO_IMPLEMENTACAO.md`)
+## Estado desta especificação (Fase 3 de `docs/PLANO_IMPLEMENTACAO.md`)
 
 Gatilhos implementados até agora:
 
 - `/setup` → aciona o agente `onboarding` (`agents/onboarding.md`).
 - `/prospectar` → aciona, em sequência, `prospeccao` → (por candidato)
-  `qualificacao-leads` → `crm` (`agents/prospeccao.md`,
-  `agents/qualificacao-leads.md` — ver o passo a passo completo em
-  `commands/prospectar.md`).
+  `qualificacao-leads` → `crm`; para cada candidato que ficar
+  `qualificado`, continua automaticamente com o **Grupo B de
+  diagnóstico** (abaixo), até `site_auditado` ou um bloqueio
+  (`agents/prospeccao.md`, `agents/qualificacao-leads.md` — ver o passo a
+  passo completo em `commands/prospectar.md`).
 
-Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Grupo B de
-diagnóstico, Grupo C de produção da página, Deploy, Precificação,
-Follow-up, Analytics, LGPD, Relatórios) ainda não têm agente implementado
-em `agents/` — serão adicionados progressivamente nas Fases 3 a 8. Se um
-comando pedir uma etapa cujo agente ainda não existe em `agents/`,
-informe ao operador que aquela etapa ainda está na fila de implementação
-(aponte para `docs/PLANO_IMPLEMENTACAO.md`) e não improvise um substituto
-nem execute a tarefa você mesmo.
+Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Grupo C de
+produção da página, Deploy, Precificação, Follow-up, Analytics, LGPD,
+Relatórios) ainda não têm agente implementado em `agents/` — serão
+adicionados progressivamente nas Fases 4 a 8. Se um comando pedir uma
+etapa cujo agente ainda não existe em `agents/`, informe ao operador que
+aquela etapa ainda está na fila de implementação (aponte para
+`docs/PLANO_IMPLEMENTACAO.md`) e não improvise um substituto nem execute
+a tarefa você mesmo.
+
+## Grupo B de diagnóstico (transição `qualificado -> em_analise -> site_auditado`)
+
+Assim que um lead fica `qualificado`, persista a transição
+`qualificado -> em_analise` (via `crm`) e acione os 8 agentes do Grupo B
+nesta ordem (algumas etapas dependem do resultado da anterior):
+
+1. `auditoria-tecnica` (`agents/auditoria-tecnica.md`) — roda primeiro;
+   produz o dossiê técnico que `seo`, `performance`, `core-web-vitals` e
+   `acessibilidade` consomem.
+2. Em qualquer ordem entre si, todos recebendo o dossiê técnico do passo 1:
+   `seo` (`agents/seo.md`), `performance` (`agents/performance.md`),
+   `core-web-vitals` (`agents/core-web-vitals.md`), `acessibilidade`
+   (`agents/acessibilidade.md`).
+3. `google-business-profile` (`agents/google-business-profile.md`) —
+   independente, só precisa de nome/cidade do lead.
+4. `seo-local` (`agents/seo-local.md`) — roda depois do passo 3, pois
+   consome o snapshot de GBP produzido ali.
+5. `inteligencia-competitiva` (`agents/inteligencia-competitiva.md`) —
+   independente, roda em qualquer momento (por padrão, por último).
+
+Após cada agente retornar, peça ao `crm` para persistir o achado via
+`registrar_auditoria` (e, no caso de `google-business-profile`, também
+`registrar_gbp_snapshot`) — e registre a execução via `lib/auditlog.py`.
+
+**Regra de transição para `site_auditado`** (`docs/CRM.md` §2.3): só
+peça ao `crm` para persistir `em_analise -> site_auditado` depois que
+**todos os 8 agentes** tiverem retornado com `status` diferente de
+`erro`. Se qualquer um retornar `precisa_input_humano` (ex.: GBP não
+localizado, concorrente não encontrado) ou `bloqueado` (ex.: site fora do
+ar), **não persista a transição** — reporte ao operador quais agentes
+ficaram pendentes e por quê, e deixe o lead em `em_analise` até a
+pendência ser resolvida (manualmente ou reacionando só aquele agente).
+
+Cada agente do Grupo B pode ser desativado individualmente (ex.: pedido
+explícito do operador para pular `inteligencia-competitiva` numa
+instalação sem esse interesse) sem quebrar os demais — nesse caso, trate
+como se aquele agente tivesse retornado `concluido` com dossiê vazio, e
+avise o operador que aquela dimensão não foi avaliada.
 
 ## Como pedir ao agente CRM para persistir uma mudança de estado
 

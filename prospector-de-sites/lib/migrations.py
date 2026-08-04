@@ -85,6 +85,26 @@ def _m2_interacoes_e_execucoes(c):
         concluido_em TEXT)''')
 
 
+@_migracao(3)
+def _m3_auditorias_e_gbp(c):
+    """Fase 3 (docs/PLANO_IMPLEMENTACAO.md §6): dossiês de diagnóstico do
+    Grupo B (RF-06) e snapshots de Google Business Profile (RF-08). Ver
+    docs/ARQUITETURA_TECNICA.md §4.2."""
+    c.execute('''CREATE TABLE IF NOT EXISTS auditorias(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lead_slug TEXT NOT NULL REFERENCES leads(slug),
+        tipo TEXT NOT NULL,
+        dados_json TEXT NOT NULL,
+        criado_em TEXT NOT NULL)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS gbp_snapshots(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lead_slug TEXT NOT NULL REFERENCES leads(slug),
+        nota REAL,
+        num_avaliacoes INTEGER,
+        completude_percentual REAL,
+        capturado_em TEXT NOT NULL)''')
+
+
 def versao_atual(c):
     c.execute("CREATE TABLE IF NOT EXISTS schema_version (versao INTEGER NOT NULL)")
     row = c.execute("SELECT versao FROM schema_version").fetchone()
