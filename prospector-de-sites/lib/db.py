@@ -32,7 +32,7 @@ import migrations
 CAMPOS_LEAD = ['slug', 'nome', 'nicho', 'cidade', 'nota', 'avaliacoes', 'email',
                'telefone', 'whatsapp', 'siteAntigo', 'motivo', 'status', 'urlNova',
                'dataProposta', 'valor', 'obs', 'contratoStatus', 'contratoEm',
-               'manutencao', 'pago', 'docCliente', 'endCliente']
+               'manutencao', 'pago', 'docCliente', 'endCliente', 'https_validado_em']
 
 # Máquina de estados (docs/CRM.md §2.2/§2.3): de_status -> {para_status permitidos}.
 # None = criação do lead (nenhum estado anterior ainda).
@@ -266,3 +266,32 @@ def listar_estetica_recente(caminho_db, limite=5):
     ).fetchall()
     c.close()
     return [dict(r) for r in rows]
+
+
+def atualizar_campos(caminho_db, slug, dados, agente):
+    """Atualiza campos do lead SEM transição de estado — diferente de
+    `atualizar_estado`: não valida contra `TRANSICOES_VALIDAS` nem grava
+    em `interacoes` (não é uma mudança de estado do funil). Uso típico:
+    o agente `deploy` registrando `urlNova`/`https_validado_em` num lead
+    que permanece `pagina_revisada` (a transição para `fechado` acontece
+    depois, por assinatura de contrato — docs/CRM.md §3).
+
+    Retorna {'ok': True, 'lead': {...}} ou {'ok': False, 'motivo': '...'}
+    se o lead não existir.
+    """
+    c = conectar(caminho_db)
+    c.row_factory = sqlite3.Row
+    atual = c.execute('SELECT * FROM leads WHERE slug=?', (slug,)).fetchone()
+    if atual is None:
+        c.close()
+        return {'ok': False, 'motivo': 'lead nao encontrado: %s' % slug}
+    colunas = [k for k in dados if k in CAMPOS_LEAD and k != 'slug']
+    if colunas:
+        c.execute(
+            'UPDATE leads SET %s, atualizado=? WHERE slug=?' % ','.join('%s=?' % k for k in colunas),
+            [dados[k] for k in colunas] + [_agora(), slug],
+        )
+        c.commit()
+    lead = dict(c.execute('SELECT * FROM leads WHERE slug=?', (slug,)).fetchone())
+    c.close()
+    return {'ok': True, 'lead': lead}

@@ -58,7 +58,10 @@ class App(SimpleHTTPRequestHandler):
             hg = dict(cfg.get('hostgator', {}))
             hg['senhaDefinida'] = bool(hg.get('senha'))
             hg.pop('senha', None)  # a senha NUNCA sai do arquivo
-            return self._json(200, {'contratante': cfg.get('contratante', {}), 'hostgator': hg})
+            vps = dict(cfg.get('vps', {}))
+            vps['senhaDefinida'] = bool(vps.get('senha'))
+            vps.pop('senha', None)  # a senha NUNCA sai do arquivo
+            return self._json(200, {'contratante': cfg.get('contratante', {}), 'hostgator': hg, 'vps': vps})
         if self.path.split('?')[0] == '/api/leads':
             c = conexao(); c.row_factory = sqlite3.Row
             rows = [dict(r) for r in c.execute('SELECT * FROM leads').fetchall()]; c.close()
@@ -76,7 +79,7 @@ class App(SimpleHTTPRequestHandler):
     def do_PUT(self):
         if self.path.split('?')[0] == '/api/config':
             cfg = ler_config(); corpo = self._corpo()
-            if 'contratante' in corpo or 'hostgator' in corpo:
+            if 'contratante' in corpo or 'hostgator' in corpo or 'vps' in corpo:
                 if 'contratante' in corpo:
                     ct = cfg.get('contratante', {})
                     ct.update({k: v for k, v in corpo['contratante'].items() if isinstance(v, str)})
@@ -88,6 +91,13 @@ class App(SimpleHTTPRequestHandler):
                         if k == 'senha' and v == '': continue  # em branco = mantém a atual
                         hg[k] = v
                     cfg['hostgator'] = hg
+                if 'vps' in corpo:
+                    vps = cfg.get('vps', {})
+                    for k, v in corpo['vps'].items():
+                        if not isinstance(v, str): continue
+                        if k == 'senha' and v == '': continue  # em branco = mantém a atual
+                        vps[k] = v
+                    cfg['vps'] = vps
             else:  # compatibilidade: corpo plano = contratante
                 ct = cfg.get('contratante', {})
                 ct.update({k: v for k, v in corpo.items() if isinstance(v, str)})

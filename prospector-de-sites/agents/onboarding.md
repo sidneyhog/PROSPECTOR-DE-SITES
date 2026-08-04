@@ -59,11 +59,14 @@ instalado.
   do dashboard:
   1. Instrua: abra o dashboard (`iniciar-dashboard.bat` na pasta
      conectada) → aba **Configurações** → seção **Conexão VPS**.
-  2. Lá ele preenche os campos + senha: host/IP, porta SSH (padrão 22),
-     usuário, caminho remoto (raiz do site no nginx, ex.:
-     `/var/www/html`), domínio, pasta base e a senha SSH. Clica em "Salvar
-     conexão" → tudo vai do navegador direto pro `prospector-config.json`
-     no computador dele, sem passar pelo chat.
+  2. Lá ele preenche os campos: host/IP, porta SSH (padrão 22), usuário,
+     caminho remoto (raiz do site no nginx, ex.: `/var/www/html`),
+     domínio, pasta base e a autenticação — **prefira chave SSH**
+     (`chaveSshPath`, caminho para uma chave privada já gerada; mais
+     segura, RNF-03) ou, se ele só tiver acesso por senha, a senha SSH
+     como alternativa. Clica em "Salvar conexão" → tudo vai do navegador
+     direto pro `prospector-config.json` no computador dele, sem passar
+     pelo chat.
   3. Peça para ele avisar quando salvar ("salvei") — aí você LÊ o config
      (verificando que os campos estão preenchidos, sem nunca exibir a
      senha) e roda o teste de conexão.
@@ -83,7 +86,7 @@ Salve tudo em `prospector-config.json` na pasta conectada, neste formato:
 {
   "assinatura": { "nome": "", "apresentacao": "", "whatsapp": "" },
   "prospeccao": { "nichos": ["nutricionistas", "psicologos", "advogados", "psiquiatras"], "cidade": "", "leadsPorBusca": 10 },
-  "vps": { "host": "", "porta": 22, "usuario": "", "senha": "", "caminhoRemoto": "/var/www/html", "dominio": "", "pastaBase": "clientes" }
+  "vps": { "host": "", "porta": 22, "usuario": "", "chaveSshPath": "", "senha": "", "caminhoRemoto": "/var/www/html", "dominio": "", "pastaBase": "clientes" }
 }
 ```
 

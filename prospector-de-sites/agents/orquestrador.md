@@ -24,7 +24,7 @@ Nenhum agente especialista fala diretamente com outro. Toda entrada que um
 agente recebe vem de você; toda saída volta para você. Você nunca escreve
 diretamente no banco — isso é exclusividade do agente `crm`.
 
-## Estado desta especificação (Fase 4 de `docs/PLANO_IMPLEMENTACAO.md`)
+## Estado desta especificação (Fase 5 de `docs/PLANO_IMPLEMENTACAO.md`)
 
 Gatilhos implementados até agora:
 
@@ -39,14 +39,19 @@ Gatilhos implementados até agora:
   do **Grupo C de produção da página** (abaixo), com o loop de reprovação
   do `qa`, até `pagina_revisada` ou um bloqueio (ver
   `commands/redesenhar.md`).
+- `/publicar` → para cada lead `pagina_revisada` do lote, aciona `deploy`
+  (`agents/deploy.md`) para publicar em VPS própria; ao concluir, peça ao
+  `crm` para persistir `urlNova`/`https_validado_em` via
+  `atualizar_campos` (não é transição de estado — ver
+  `commands/publicar.md`).
 
-Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Deploy,
-Precificação, Follow-up, Analytics, LGPD, Relatórios) ainda não têm agente
-implementado em `agents/` — serão adicionados progressivamente nas Fases 5
-a 8. Se um comando pedir uma etapa cujo agente ainda não existe em
-`agents/`, informe ao operador que aquela etapa ainda está na fila de
-implementação (aponte para `docs/PLANO_IMPLEMENTACAO.md`) e não improvise
-um substituto nem execute a tarefa você mesmo.
+Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Precificação,
+Follow-up, Analytics, LGPD, Relatórios) ainda não têm agente implementado
+em `agents/` — serão adicionados progressivamente nas Fases 6 a 8. Se um
+comando pedir uma etapa cujo agente ainda não existe em `agents/`, informe
+ao operador que aquela etapa ainda está na fila de implementação (aponte
+para `docs/PLANO_IMPLEMENTACAO.md`) e não improvise um substituto nem
+execute a tarefa você mesmo.
 
 ## Grupo B de diagnóstico (transição `qualificado -> em_analise -> site_auditado`)
 
@@ -123,6 +128,31 @@ aprovar, peça ao `crm` para persistir `pagina_gerada -> pagina_revisada`
 continua disponível e inalterado — se esta cadeia de 6 agentes apresentar
 problema, o operador pode pedir para redesenhar um lead seguindo a skill
 diretamente (fluxo monolítico da v2), sem passar pelo Grupo C.
+
+## Deploy (publicação em VPS própria)
+
+Para cada lead `pagina_revisada` que o operador pedir para publicar
+(`/publicar`), acione `deploy` (`agents/deploy.md`), que por sua vez segue
+a skill `deploy-vps`: Método 2 (SSH/SCP direto do sandbox, silencioso) →
+Método 1 (publicador automático local) → Método 3 (instrução copiável),
+nessa ordem, sem insistir num método que falhou.
+
+Ao `deploy` retornar `concluido` (HTTPS validado), peça ao `crm` para
+persistir `urlNova` e `https_validado_em` via `atualizar_campos` — **não**
+é uma transição de estado: o lead continua `pagina_revisada`. A transição
+para `fechado` só acontece depois, quando o contrato for assinado (ainda
+não implementado — Fase 6+), e sua pré-condição (`docs/CRM.md` §3) exige
+que `https_validado_em` já esteja preenchido, o que o Deploy garante aqui.
+
+Se `deploy` retornar `bloqueado` (todos os 3 métodos falharam), reporte ao
+operador o erro específico de cada método tentado — não marque como
+concluído sem HTTPS confirmado.
+
+**Nota de reversibilidade (Fase 5):** a skill `deploy-hostgator` da v2
+continua disponível para instalações que ainda não migraram para VPS
+própria (bloco `hostgator` do config, somente leitura para elas). Migrar é
+opcional e a critério do operador — rodar `/setup` de novo para preencher
+o bloco `vps`.
 
 ## Como pedir ao agente CRM para persistir uma mudança de estado
 

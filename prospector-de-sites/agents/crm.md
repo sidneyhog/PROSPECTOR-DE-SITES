@@ -112,6 +112,19 @@ print(db.listar_estetica_recente('<PASTA_CONECTADA>/prospector.db', limite=5))
 "
 ```
 
+Para atualizar campos do lead SEM transição de estado (ex.: agente
+`deploy` registrando `urlNova`/`https_validado_em` num lead que continua
+`pagina_revisada` — a transição para `fechado` acontece depois, por
+assinatura de contrato):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+print(db.atualizar_campos('<PASTA_CONECTADA>/prospector.db', '<slug>', {'urlNova': 'https://...', 'https_validado_em': '2026-01-01 12:00:00'}, agente='deploy'))
+"
+```
+
 ## Estados válidos e transições (docs/CRM.md §2.1/§2.3)
 
 `encontrado · qualificado · em_analise · site_auditado · pagina_gerada ·

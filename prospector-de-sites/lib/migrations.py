@@ -122,6 +122,18 @@ def _m4_estetica_historico(c):
         gerado_em TEXT NOT NULL)''')
 
 
+@_migracao(5)
+def _m5_https_validado(c):
+    """Fase 5 (docs/PLANO_IMPLEMENTACAO.md §8): marca quando o HTTPS de um
+    lead publicado foi validado (RF-11) — condição para a transição
+    `negociacao -> fechado` (docs/CRM.md §3). Não adicionamos `vps_host`/
+    `vps_dominio` por lead (como o esboço inicial de
+    docs/ARQUITETURA_TECNICA.md §4.1 cogitava): a VPS é uma só por
+    instalação (config global `vps.dominio`), não por lead — cada lead só
+    precisa saber QUANDO seu HTTPS foi validado."""
+    _add_coluna_se_faltando(c, 'leads', 'https_validado_em', 'TEXT')
+
+
 def versao_atual(c):
     c.execute("CREATE TABLE IF NOT EXISTS schema_version (versao INTEGER NOT NULL)")
     row = c.execute("SELECT versao FROM schema_version").fetchone()
