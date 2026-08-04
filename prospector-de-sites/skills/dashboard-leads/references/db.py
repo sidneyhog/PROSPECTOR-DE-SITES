@@ -75,6 +75,27 @@ def obter_lead(caminho_db, slug):
     return dict(row) if row else None
 
 
+def listar_leads(caminho_db, nicho=None, cidade=None):
+    """Lista leads (slug, nome) filtrando por nicho/cidade — usado pelo
+    agente `prospeccao`, via Orquestrador, para não duplicar leads já
+    existentes no CRM na mesma busca (docs/AGENTES.md §3, RF-04)."""
+    c = conectar(caminho_db)
+    c.row_factory = sqlite3.Row
+    condicoes, valores = [], []
+    if nicho:
+        condicoes.append('nicho = ?')
+        valores.append(nicho)
+    if cidade:
+        condicoes.append('cidade = ?')
+        valores.append(cidade)
+    sql = 'SELECT slug, nome FROM leads'
+    if condicoes:
+        sql += ' WHERE ' + ' AND '.join(condicoes)
+    rows = [dict(r) for r in c.execute(sql, valores).fetchall()]
+    c.close()
+    return rows
+
+
 def atualizar_estado(caminho_db, slug, novo_estado, dados=None, agente='crm', motivo=None):
     """Valida a transição de estado (docs/CRM.md §2.3) e persiste.
 

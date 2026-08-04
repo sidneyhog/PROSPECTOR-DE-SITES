@@ -28,6 +28,17 @@ print(db.obter_lead('<PASTA_CONECTADA>/prospector.db', '<slug>'))
 "
 ```
 
+Para listar leads já existentes por nicho/cidade (dedupe de prospecção —
+`docs/AGENTES.md` §3):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+print(db.listar_leads('<PASTA_CONECTADA>/prospector.db', nicho='<nicho>', cidade='<cidade>'))
+"
+```
+
 Para persistir uma transição de estado:
 
 ```bash

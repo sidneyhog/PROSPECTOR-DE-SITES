@@ -24,20 +24,24 @@ Nenhum agente especialista fala diretamente com outro. Toda entrada que um
 agente recebe vem de você; toda saída volta para você. Você nunca escreve
 diretamente no banco — isso é exclusividade do agente `crm`.
 
-## Estado desta especificação (Fase 1 de `docs/PLANO_IMPLEMENTACAO.md`)
+## Estado desta especificação (Fase 2 de `docs/PLANO_IMPLEMENTACAO.md`)
 
-Nesta fase, o único gatilho implementado é:
+Gatilhos implementados até agora:
 
 - `/setup` → aciona o agente `onboarding` (`agents/onboarding.md`).
+- `/prospectar` → aciona, em sequência, `prospeccao` → (por candidato)
+  `qualificacao-leads` → `crm` (`agents/prospeccao.md`,
+  `agents/qualificacao-leads.md` — ver o passo a passo completo em
+  `commands/prospectar.md`).
 
-Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Prospecção,
-Qualificação, Grupo B de diagnóstico, Grupo C de produção da página,
-Deploy, Precificação, Follow-up, Analytics, LGPD, Relatórios) ainda não
-têm agente implementado em `agents/` — serão adicionados progressivamente
-nas Fases 2 a 8. Se um comando pedir uma etapa cujo agente ainda não
-existe em `agents/`, informe ao operador que aquela etapa ainda está na
-fila de implementação (aponte para `docs/PLANO_IMPLEMENTACAO.md`) e não
-improvise um substituto nem execute a tarefa você mesmo.
+Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Grupo B de
+diagnóstico, Grupo C de produção da página, Deploy, Precificação,
+Follow-up, Analytics, LGPD, Relatórios) ainda não têm agente implementado
+em `agents/` — serão adicionados progressivamente nas Fases 3 a 8. Se um
+comando pedir uma etapa cujo agente ainda não existe em `agents/`,
+informe ao operador que aquela etapa ainda está na fila de implementação
+(aponte para `docs/PLANO_IMPLEMENTACAO.md`) e não improvise um substituto
+nem execute a tarefa você mesmo.
 
 ## Como pedir ao agente CRM para persistir uma mudança de estado
 
