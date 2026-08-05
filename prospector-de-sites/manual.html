@@ -50,14 +50,14 @@
     <li><b>Extensão Claude in Chrome</b> conectada — é ela que navega no Google Maps.</li>
     <li><b>Conector do Gmail</b> ativo (Configurações → Conectores) — rascunhos de proposta e leitura de respostas.</li>
     <li><b>Conector do Google Drive</b> — planilha de leads no Google Sheets.</li>
-    <li><b>Uma VPS própria</b> (Hostinger, DigitalOcean, etc.) com nginx instalado e o domínio já apontando pra ela (registro DNS tipo A), com os dados de acesso SSH em mãos: host/IP, usuário e, de preferência, uma chave SSH (senha funciona, mas chave é mais segura).</li>
+    <li><b>Uma VPS própria</b> (Hostinger, DigitalOcean, etc.) com Docker instalado (Traefik + Portainer já no ar — passo a passo no <code>docs/RUNBOOK_VPS.md</code>) e o domínio já apontando pra ela (registro DNS tipo A), com os dados de acesso SSH em mãos: host/IP, usuário e, de preferência, uma chave SSH (senha funciona, mas chave é mais segura).</li>
     <li><b>Uma pasta conectada no Cowork</b> (ex.: "Clientes") — tudo fica salvo nela.</li>
   </ul>
 
   <h2 id="setup">2. Configuração (uma vez só)</h2>
   <ol>
     <li>Digite <span class="cmd">/setup</span> no Cowork e responda: sua assinatura (nome, apresentação, WhatsApp), nichos preferidos, cidade e quantos leads por busca.</li>
-    <li><b>Dados da VPS: tudo no dashboard, nada no chat.</b> Abra o dashboard (<code>iniciar-dashboard.bat</code>) → aba <b>Configurações</b> → seção <b>Conexão VPS</b> → preencha host/IP, porta SSH, usuário, caminho remoto (raiz do nginx), domínio e a chave SSH (ou senha, se não tiver chave) → <b>Salvar conexão</b>. Tudo vai direto pro arquivo no seu computador — o chat nunca vê.</li>
+    <li><b>Dados da VPS: tudo no dashboard, nada no chat.</b> Abra o dashboard (<code>iniciar-dashboard.bat</code>) → aba <b>Configurações</b> → seção <b>Conexão VPS</b> → preencha host/IP, porta SSH, usuário, caminho remoto (a pasta que o container <code>prospector-sites</code> serve), domínio e a chave SSH (ou senha, se não tiver chave) → <b>Salvar conexão</b>. Tudo vai direto pro arquivo no seu computador — o chat nunca vê.</li>
     <li>O Claude faz um teste de publicação e te entrega este manual + o dashboard prontos na pasta.</li>
   </ol>
   <div class="box dica">💡 Preencha também seus dados de contratante na aba <b>Configurações</b> do dashboard — todo contrato já sai com eles.</div>
@@ -84,7 +84,7 @@
     <li>Pronto: de agora em diante o <span class="cmd">/publicar</span> prepara a fila e em até 1 minuto os sites sobem SOZINHOS pra sua VPS via SSH — sem janela, sem clique. O Claude confere as URLs e o cadeado HTTPS na sequência.</li>
   </ol>
   <p style="font-size:13px;color:var(--muted)">Plano B manual: duplo clique no <code>publicar-agora.bat</code> publica na hora mostrando o progresso. O histórico fica em <code>publicador-log.txt</code>.</p>
-  <div class="box dica">💡 Se aparecer erro de certificado no primeiro deploy: rode <code>certbot --nginx -d seudominio.com.br</code> na VPS (uma vez só, leva minutos) — peça ao Claude para te guiar passo a passo no /setup.</div>
+  <div class="box dica">💡 Se aparecer erro de certificado no primeiro deploy: o Traefik emite sozinho, sem comando manual — confira se a pilha Docker está de pé (<code>docker compose ps</code> na VPS) e se o domínio já aponta pra ela. Peça ao Claude para te guiar passo a passo no /setup.</div>
 
   <h2 id="dashboard">5. O dashboard (seu CRM local)</h2>
   <p>Dê <b>dois cliques em <code>iniciar-dashboard.bat</code></b> na sua pasta (precisa de Python instalado) — abre em <code>http://localhost:8765</code> com tudo salvo no banco <code>prospector.db</code>. Sem Python, abra <code>dashboard.html</code> direto (modo leitura com edições locais).</p>

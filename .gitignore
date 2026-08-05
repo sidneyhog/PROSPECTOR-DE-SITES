@@ -11,3 +11,8 @@ logs/
 fila-publicacao.txt
 fila-publicada-*.txt
 publicador-log.txt
+
+# Pilha Docker da VPS (skills/deploy-vps/references/docker/): .env real
+# tem domínio/e-mail do operador, letsencrypt/ tem certificados/chaves.
+skills/deploy-vps/references/docker/.env
+skills/deploy-vps/references/docker/letsencrypt/

@@ -1,0 +1,78 @@
+# Pilha de hospedagem VPS do Prospector de Sites.
+#
+# 3 serviços:
+#   - traefik           proxy reverso + HTTPS automático (Let's Encrypt),
+#                        substitui a configuração manual de nginx+certbot.
+#   - portainer          gestão visual dos containers (opcional, mas
+#                        recomendado para o operador acompanhar/reiniciar
+#                        sem precisar decorar comandos docker).
+#   - prospector-sites   nossa imagem (Dockerfile nesta pasta): serve os
+#                        sites de clientes publicados pelo /publicar.
+#
+# Ver docs/RUNBOOK_VPS.md para o passo a passo completo de instalação.
+# Variáveis em .env (copie .env.example -> .env e preencha).
+
+networks:
+  web:
+    name: web
+
+volumes:
+  portainer_data:
+
+services:
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.httpchallenge=true
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.le.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - web
+
+  portainer:
+    image: portainer/portainer-ce:2.21-alpine
+    container_name: portainer
+    restart: unless-stopped
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.portainer.rule=Host(`${PORTAINER_DOMINIO}`)
+      - traefik.http.routers.portainer.entrypoints=websecure
+      - traefik.http.routers.portainer.tls.certresolver=le
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
+
+  prospector-sites:
+    build: .
+    image: prospector-sites:latest
+    container_name: prospector-sites
+    restart: unless-stopped
+    volumes:
+      - ${CAMINHO_SITES}:/usr/share/nginx/html:ro
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prospector-sites.rule=Host(`${DOMINIO}`)
+      - traefik.http.routers.prospector-sites.entrypoints=websecure
+      - traefik.http.routers.prospector-sites.tls.certresolver=le
+      - traefik.http.services.prospector-sites.loadbalancer.server.port=80

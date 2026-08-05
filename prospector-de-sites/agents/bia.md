@@ -48,25 +48,28 @@ Colete:
 ### 4. Conexão com a VPS própria
 
 Pergunte se o usuário já tem uma VPS contratada (qualquer provedor:
-Hetzner, DigitalOcean, Contabo etc.) com nginx (ou outro servidor web) já
-instalado.
+Hetzner, DigitalOcean, Contabo, Hostinger etc.) com a pilha Docker
+(Traefik + Portainer + a imagem `prospector-sites`) já no ar.
 
 - **Se ainda não tem**: explique brevemente que precisa de (1) uma VPS com
-  IP público, (2) nginx (ou apache) instalado e configurado com um
-  diretório raiz para os sites, e (3) um domínio próprio que possa apontar
-  pra ela. O passo a passo completo (provisionar, instalar nginx, apontar
-  DNS, emitir certificado Let's Encrypt) está em `docs/RUNBOOK_VPS.md` —
-  ofereça guiar o usuário por ele, comando a comando, se ele tiver acesso
-  SSH à VPS e autorizar. Depois de ter isso, deve voltar e rodar `/setup`
-  de novo. Salve o config parcial e encerre com `status: precisa_input_humano`.
+  IP público, (2) Docker instalado e a pilha `docker compose up -d`
+  rodando (Traefik cuida do HTTPS automaticamente, sem `certbot` manual),
+  e (3) um domínio próprio que possa apontar pra ela. O passo a passo
+  completo (provisionar, instalar Docker, apontar DNS, subir Traefik +
+  Portainer + `prospector-sites`) está em `docs/RUNBOOK_VPS.md` — ofereça
+  guiar o usuário por ele, comando a comando, se ele tiver acesso SSH à
+  VPS e autorizar. Depois de ter isso, deve voltar e rodar `/setup` de
+  novo. Salve o config parcial e encerre com `status: precisa_input_humano`.
 - **Se já tem**: NÃO colete nenhum dado da VPS pelo chat (nem host, nem
   usuário — e JAMAIS a senha). Tudo vai num lugar só, a aba Configurações
   do dashboard:
   1. Instrua: abra o dashboard (`iniciar-dashboard.bat` na pasta
      conectada) → aba **Configurações** → seção **Conexão VPS**.
   2. Lá ele preenche os campos: host/IP, porta SSH (padrão 22), usuário,
-     caminho remoto (raiz do site no nginx, ex.: `/var/www/html`),
-     domínio, pasta base e a autenticação — **prefira chave SSH**
+     caminho remoto (a pasta do host montada no container
+     `prospector-sites`, igual ao `CAMINHO_SITES` do `.env` da pilha
+     Docker — ex.: `/opt/prospector/sites`), domínio, pasta base e a
+     autenticação — **prefira chave SSH**
      (`chaveSshPath`, caminho para uma chave privada já gerada; mais
      segura, RNF-03) ou, se ele só tiver acesso por senha, a senha SSH
      como alternativa. Clica em "Salvar conexão" → tudo vai do navegador
@@ -79,9 +82,9 @@ instalado.
   Nunca exiba, imprima ou registre a senha em nenhuma saída. Se ele
   preferir, editar o `prospector-config.json` na mão também vale.
 
-  Se o **domínio ainda não aponta pra VPS** (DNS), oriente a seção
-  "Domínio e HTTPS" da skill `deploy-vps` antes de seguir para o teste de
-  conexão.
+  Se o **domínio ainda não aponta pra VPS** (DNS) ou a pilha Docker ainda
+  não estiver no ar, oriente `docs/RUNBOOK_VPS.md` antes de seguir para o
+  teste de conexão.
 
 ### 5. Salvar e testar
 

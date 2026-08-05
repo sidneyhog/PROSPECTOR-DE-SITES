@@ -59,7 +59,7 @@ A entrega final ao usuário DEVE conter, nesta ordem, sem exceção:
    `dashboard-server.py`/`dashboard-leads`.
 4. Orientação curta: `comparar.html` = antes/depois lado a lado ·
    `[slug]-editor.html` = editar textos/imagens · próximo passo:
-   `/publicar` (o agente `diego` publica em VPS própria via SSH/nginx).
+   `/publicar` (o agente `diego` publica em VPS própria via SSH/SCP + Docker/Traefik).
 
 É PROIBIDO encerrar a resposta sem os itens 1 e 3.
 
