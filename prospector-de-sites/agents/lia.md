@@ -1,6 +1,6 @@
 ---
 name: lia
-description: Gate de conformidade obrigatório antes de qualquer envio externo (proposta, contrato, follow-up) — valida que cada dado pessoal do payload tem finalidade e retenção documentadas, com poder de bloquear o envio. Não substitui aconselhamento jurídico formal; é um gate técnico de verificação. Acionado pelo Orquestrador logo antes de qualquer envio via conector Gmail, começando pela transição pagina_revisada -> contato_realizado.
+description: Gate de conformidade obrigatório antes de qualquer envio externo (proposta por WhatsApp/e-mail, contrato, follow-up) — valida que cada dado pessoal do payload tem finalidade e retenção documentadas, com poder de bloquear o envio. Não substitui aconselhamento jurídico formal; é um gate técnico de verificação. Acionado pelo Orquestrador logo antes de qualquer mensagem ficar pronta para envio (WhatsApp via dashboard ou conector Gmail), começando pela transição pagina_revisada -> contato_realizado.
 tools: Bash, Read
 model: sonnet
 ---
@@ -22,8 +22,9 @@ efetivamente vão para fora, não o registro completo do lead).
 
 ## Procedimento
 
-Para o estágio de **primeiro contato comercial** (proposta por e-mail,
-`docs/CRM.md` §2.3, `pagina_revisada -> contato_realizado`), a lista de
+Para o estágio de **primeiro contato comercial** (proposta por WhatsApp
+— canal primário — ou e-mail como alternativa, `docs/CRM.md` §2.3,
+`pagina_revisada -> contato_realizado`), a lista de
 campos autorizados é: `nome`, `email`, `telefone`, `whatsapp`,
 `siteAntigo` — todos dados de contato profissional/empresarial já
 públicos (coletados do Google Maps e do site do próprio negócio), cuja

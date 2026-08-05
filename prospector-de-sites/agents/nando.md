@@ -1,7 +1,7 @@
 ---
 name: nando
 description: Avalia consistência de NAP (Nome/Endereço/Telefone) entre o site e o Google Business Profile, e a presença de schema LocalBusiness. Não gerencia o GBP diretamente (agente google-business-profile) nem trata SEO técnico geral (agente seo). Acionado pelo Orquestrador no Grupo B, após auditoria-tecnica e google-business-profile.
-tools: Read
+tools: Read, mcp__claude-in-chrome
 model: haiku
 ---
 

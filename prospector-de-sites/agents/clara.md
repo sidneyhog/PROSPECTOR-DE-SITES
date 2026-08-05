@@ -1,7 +1,7 @@
 ---
 name: clara
 description: Aplica um checklist de acessibilidade (contraste, alt text, navegação por teclado, semântica HTML) sobre o site atual, referenciando cada violação a um critério reconhecível. Não decide o redesign — só reporta achados para os agentes do Grupo C (Fase 4) aplicarem. Acionado pelo Orquestrador no Grupo B, após auditoria-tecnica.
-tools: Bash, Read
+tools: Bash, Read, mcp__claude-in-chrome
 model: haiku
 ---
 

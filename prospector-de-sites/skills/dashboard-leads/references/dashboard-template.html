@@ -183,7 +183,7 @@ var MODE='file';
 function aplicaOv(arr){return arr.filter(function(l){return !(OV[l.slug]&&OV[l.slug]._del)}).map(function(l){return Object.assign({},l,OV[l.slug]||{})})}
 var leads=aplicaOv(D.leads||[]);
 if(Object.keys(OV).length)document.getElementById('limpar-ov')&&(document.getElementById('limpar-ov').style.display='inline-block');
-fetch('/api/leads',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){MODE='db';leads=j;fetch('/api/config',{cache:'no-store'}).then(function(r){return r.json()}).then(function(c){CFG=(c&&c.contratante!==undefined)?c.contratante:c;VPS=(c&&c.vps)||{};if(view==='config')render()});fetch('/api/execucoes',{cache:'no-store'}).then(function(r){return r.json()}).then(function(e){EXEC=e||[];if(view==='execucoes')render()}).catch(function(){});var m=document.getElementById('modo');m.textContent='banco conectado';m.className='modo db';m.title='Alterações salvas no prospector.db';var lb=document.getElementById('limpar-ov');if(lb)lb.style.display='none';render()}).catch(function(){});
+fetch('/api/leads',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){MODE='db';leads=j;fetch('/api/config',{cache:'no-store'}).then(function(r){return r.json()}).then(function(c){CFG=(c&&c.contratante!==undefined)?c.contratante:c;VPS=(c&&c.vps)||{};if(view==='config')render()});fetch('/api/execucoes',{cache:'no-store'}).then(function(r){return r.json()}).then(function(e){EXEC=e||[];if(view==='execucoes')render()}).catch(function(){});fetch('/api/propostas',{cache:'no-store'}).then(function(r){return r.json()}).then(function(p){PROPOSTAS={};(p||[]).forEach(function(x){PROPOSTAS[x.lead_slug]=x});render()}).catch(function(){});var m=document.getElementById('modo');m.textContent='banco conectado';m.className='modo db';m.title='Alterações salvas no prospector.db';var lb=document.getElementById('limpar-ov');if(lb)lb.style.display='none';render()}).catch(function(){});
 var CORES={novo:'var(--novo)',redesenhado:'var(--rede)',publicado:'var(--pub)',proposta:'var(--prop)',respondeu:'var(--resp)',fechado:'var(--fech)',descartado:'var(--cinza)',
  encontrado:'#7A8CA8',qualificado:'#8B9B5C',em_analise:'#B98A4A',site_auditado:'#5E9DA8',pagina_gerada:'#9C7BB8',pagina_revisada:'#6A9B72',contato_realizado:'#C98A2D',negociacao:'#D9A441',follow_up:'#C9762D',perdido:'#B7B2A7'};
 var NOMES={novo:'Novo',redesenhado:'Redesenhado',publicado:'Publicado',proposta:'Proposta enviada',respondeu:'Respondeu',fechado:'Fechado',descartado:'Descartado',
@@ -194,6 +194,7 @@ var NOMES={novo:'Novo',redesenhado:'Redesenhado',publicado:'Publicado',proposta:
 var ORDEM=['novo','redesenhado','publicado','proposta','respondeu',
  'encontrado','qualificado','em_analise','site_auditado','pagina_gerada','pagina_revisada','contato_realizado','negociacao','follow_up','fechado'];
 var view='geral',busca='',sortCol='nome',sortAsc=true,pag=1,porPag='auto';
+var PROPOSTAS={};
 function pagSize(){if(porPag!=='auto')return porPag;var v=document.getElementById('view');var h=v?v.clientHeight:600;return Math.max(4,Math.floor((h-165)/59))}
 document.getElementById('upd').textContent='atualizado em '+(D.atualizado||'—');
 function dias(iso){if(!iso)return 0;return Math.floor((Date.now()-new Date(iso+'T12:00:00'))/864e5)}
@@ -206,6 +207,13 @@ function salvarOv(slug,ch){
 function deletar(slug){if(!confirm('Excluir este lead do painel?'))return;
  if(MODE==='db'){fetch('/api/leads/'+encodeURIComponent(slug),{method:'DELETE'}).then(recarrega);return}
  OV[slug]=Object.assign(OV[slug]||{},{_del:true});localStorage.setItem('prospector_ov',JSON.stringify(OV));leads=aplicaOv(D.leads||[]);render()}
+function enviarMensagem(slug){
+ var prop=PROPOSTAS[slug];var lead=leads.filter(function(l){return l.slug===slug})[0];
+ if(!prop||!lead||!lead.whatsapp){alert('Sem mensagem pendente ou WhatsApp cadastrado para este lead.');return}
+ window.open('https://wa.me/'+lead.whatsapp+'?text='+encodeURIComponent(prop.mensagem||''),'_blank');
+ fetch('/api/proposta/'+encodeURIComponent(slug)+'/enviar',{method:'POST'}).then(function(r){return r.json()}).then(function(res){
+  if(!res.ok){alert('Não consegui confirmar o envio: '+(res.motivo||'erro desconhecido'));return}
+  delete PROPOSTAS[slug];recarrega()})}
 var CFG={};
 var editSlug=null;
 function abrirEdit(slug){editSlug=slug;var l=leads.filter(function(x){return x.slug===slug})[0]||{};
@@ -237,6 +245,7 @@ function acoes(l){var a=[];
  if(l.urlNova)a.push('<a href="'+l.urlNova+'" target="_blank">no ar ↗</a>');
  if(l.whatsapp)a.push('<a href="https://wa.me/'+l.whatsapp+'" target="_blank">whatsapp</a>');
  if(l.email&&l.email.indexOf('@')>0)a.push('<a href="mailto:'+l.email+'">e-mail</a>');
+ if(PROPOSTAS[l.slug])a.push('<a href="#" class="tag" style="color:var(--ok)" onclick="enviarMensagem(\''+l.slug+'\');return false">📤 enviar mensagem</a>');
  a.push('<a href="#" onclick="abrirEdit(\''+l.slug+'\');return false">✎ dados</a>');
  a.push('<a href="#" class="del" onclick="deletar(\''+l.slug+'\');return false">✕ excluir</a>');
  return '<div class="acoes">'+a.join('')+'</div>'}

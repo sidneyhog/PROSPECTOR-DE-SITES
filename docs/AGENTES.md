@@ -219,8 +219,10 @@ entra oficialmente no funil como lead `Qualificado`.
 
 **Responsabilidades.** Julgar a qualidade do site atual do candidato (layout
 datado, ausência de CTA, hospedagem gratuita, não responsivo, ausência de
-prova social — critérios herdados da v2); confirmar existência de e-mail
-público; produzir um veredito com justificativa.
+prova social — critérios herdados da v2); confirmar existência de um
+contato de WhatsApp válido (canal primário de contato desde 05/08/2026 —
+`docs/PRD.md` §20; e-mail deixou de ser critério de desqualificação);
+produzir um veredito com justificativa.
 
 **Limites.** Não busca novos candidatos (isso é Prospecção); não realiza
 auditoria técnica aprofundada (isso é o agente de Auditoria Técnica, que
@@ -535,12 +537,14 @@ preserva ativos reais do cliente sem invenção.
 
 ### 15. Clarice — Copywriting
 
-**Objetivo.** Redigir todo o texto voltado ao cliente final: página, e-mail
-de proposta, follow-up, contrato (partes textuais).
+**Objetivo.** Redigir todo o texto voltado ao cliente final: página,
+mensagem de proposta (WhatsApp, canal primário desde 05/08/2026 — e-mail
+como alternativa), follow-up, contrato (partes textuais).
 
 **Responsabilidades.** Redigir copy da página com base na estrutura (UX/UI)
-e nos diferenciais levantados (Inteligência Competitiva); redigir e-mails
-de proposta/follow-up sem preço (preço é do agente de Precificação, §19).
+e nos diferenciais levantados (Inteligência Competitiva); redigir
+mensagens de proposta/follow-up sem preço (preço é do agente de
+Precificação, §19).
 
 **Limites.** Não define preço/condições comerciais; não decide layout/
 estrutura (UX/UI) nem identidade visual (Branding); não implementa HTML
@@ -549,8 +553,8 @@ estrutura (UX/UI) nem identidade visual (Branding); não implementa HTML
 **Entradas.** Estrutura de UX/UI + achados de Inteligência Competitiva +
 tom de voz definido no Onboarding.
 
-**Saídas.** Textos finais (página, e-mail, follow-up) prontos para revisão
-de CRO.
+**Saídas.** Textos finais (página, mensagem de proposta, follow-up)
+prontos para revisão de CRO.
 
 **Ferramentas.** Nenhuma externa além de leitura dos insumos recebidos.
 
@@ -558,7 +562,8 @@ de CRO.
 Onboarding.
 
 **Critérios de qualidade.** Copy livre de alegações não verificáveis; sem
-gatilhos que soem spam (checklist já usado na v2 para e-mails).
+gatilhos que soem spam (mensagem curta e pessoal para WhatsApp; checklist
+completo já usado na v2 quando o canal for e-mail).
 
 **Critérios de encerramento.** Todos os textos necessários entregues e
 prontos para avaliação de CRO.
@@ -672,8 +677,9 @@ Copywriting (que só redige), conforme proposto no PRD §10.
 considerando complexidade identificada (Grupo B) e posicionamento
 competitivo (Inteligência Competitiva).
 
-**Limites.** Não redige o e-mail de proposta (Copywriting faz isso, usando o
-valor definido aqui); não negocia diretamente com o cliente final.
+**Limites.** Não redige a mensagem de proposta (Copywriting faz isso,
+usando o valor definido aqui); não negocia diretamente com o cliente
+final.
 
 **Entradas.** Dossiê de auditoria + achados de Inteligência Competitiva +
 tabela de referência de preços da instalação (config).
@@ -923,7 +929,7 @@ ajuste específico.
 | `EmAnalise` → `SiteAuditado` | CRM (persistência do dossiê consolidado) |
 | `SiteAuditado` → `PaginaGerada` | UX/UI, Branding, Copywriting, CRO, Front-end |
 | `PaginaGerada` → `PaginaRevisada` | QA (loop com Front-end/Copywriting se reprovado) |
-| `PaginaRevisada` → `ContatoRealizado` | Precificação/Proposta Comercial, Copywriting (e-mail), LGPD (gate), CRM |
+| `PaginaRevisada` → `ContatoRealizado` | Precificação/Proposta Comercial, Copywriting (mensagem WhatsApp/e-mail), LGPD (gate), CRM — envio confirmado manualmente pelo operador no dashboard |
 | `ContatoRealizado` → `Negociacao` | Follow-up, Analytics |
 | `Negociacao` → `Fechado` | Deploy, CRM |
 | `Negociacao` / `ContatoRealizado` → `Perdido` | Follow-up, CRM |

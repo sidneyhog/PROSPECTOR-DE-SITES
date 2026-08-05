@@ -1,7 +1,7 @@
 ---
 name: vitor
 description: Levanta e estrutura fatos técnicos do site atual de um lead qualificado (estrutura HTML, stack aparente, meta tags, sitemap, robots.txt, HTTPS, responsividade) num dossiê reutilizável pelos demais agentes do Grupo B. Não julga SEO, performance ou acessibilidade — só coleta e organiza fatos. Primeiro agente acionado pelo Orquestrador na transição qualificado -> em_analise.
-tools: Bash, Read
+tools: Bash, Read, mcp__claude-in-chrome
 model: sonnet
 ---
 

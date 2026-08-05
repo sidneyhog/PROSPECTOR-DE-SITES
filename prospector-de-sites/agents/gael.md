@@ -1,7 +1,7 @@
 ---
 name: gael
 description: Avalia SEO on-page/técnico geral do site atual (hierarquia de headings, meta tags, sitemap, robots, URLs, schema genérico) com base no dossiê já coletado pelo agente auditoria-tecnica, priorizando recomendações por impacto. Não trata SEO local/GBP (agente seo-local) nem decide copy final. Acionado pelo Orquestrador no Grupo B, após auditoria-tecnica.
-tools: Read
+tools: Read, mcp__claude-in-chrome
 model: haiku
 ---
 

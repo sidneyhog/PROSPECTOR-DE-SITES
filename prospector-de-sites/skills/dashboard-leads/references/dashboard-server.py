@@ -71,6 +71,10 @@ class App(SimpleHTTPRequestHandler):
             return self._json(200, db.obter_auditorias(DB, partes_get[3]))
         if len(partes_get) == 4 and partes_get[1] == 'api' and partes_get[2] == 'lgpd':
             return self._json(200, db.lgpd_status(DB, partes_get[3]))
+        if len(partes_get) == 4 and partes_get[1] == 'api' and partes_get[2] == 'proposta':
+            return self._json(200, db.obter_proposta_pendente(DB, partes_get[3]))
+        if self.path.split('?')[0] == '/api/propostas':
+            return self._json(200, db.listar_propostas_pendentes(DB))
         if self.path in ('/', ''):
             self.path = '/dashboard.html'
         return SimpleHTTPRequestHandler.do_GET(self)
@@ -80,6 +84,10 @@ class App(SimpleHTTPRequestHandler):
             c.execute('INSERT OR REPLACE INTO leads (%s) VALUES (%s)' % (','.join(CAMPOS), ','.join('?'*len(CAMPOS))),
                       [l.get(k) for k in CAMPOS])
             c.commit(); c.close(); return self._json(200, {'ok': True})
+        partes = self.path.split('?')[0].split('/')
+        if len(partes) == 5 and partes[1] == 'api' and partes[2] == 'proposta' and partes[4] == 'enviar':
+            r = db.confirmar_envio_whatsapp(DB, partes[3])
+            return self._json(200 if r.get('ok') else 400, r)
         return self._json(404, {'erro': 'rota'})
     def do_PUT(self):
         if self.path.split('?')[0] == '/api/config':

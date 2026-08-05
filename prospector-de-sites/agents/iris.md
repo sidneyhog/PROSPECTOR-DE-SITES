@@ -1,7 +1,7 @@
 ---
 name: iris
 description: Busca candidatos a lead no Google Maps para um nicho/cidade, aplicando apenas o filtro de potencial financeiro (nota/avaliações) e o filtro de existência de site ativo. Não julga qualidade do site nem decide se o candidato deve virar lead qualificado — isso é exclusividade do agente qualificacao-leads. Acionado pelo Orquestrador a partir de /prospectar.
-tools: Bash, Read
+tools: Bash, Read, mcp__claude-in-chrome
 model: sonnet
 ---
 
