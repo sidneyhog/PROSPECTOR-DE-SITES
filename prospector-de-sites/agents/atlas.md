@@ -161,34 +161,38 @@ concluído sem HTTPS confirmado.
 ## Comercial: Precificação + gate de LGPD (transição `pagina_revisada -> contato_realizado`)
 
 Para um lead `pagina_revisada` já publicado (com `urlNova`/
-`https_validado_em` registrados) e com e-mail confirmado, acione nesta
-ordem:
+`https_validado_em` registrados) e com WhatsApp confirmado (exigido desde
+a qualificação por `justo` — canal primário desde 05/08/2026,
+`docs/PRD.md` §20), acione nesta ordem:
 
 1. `valentina` (`agents/valentina.md`) — define
    valor de setup/manutenção a partir do dossiê e da Inteligência
    Competitiva. Peça ao `carmem` para persistir via
-   `registrar_proposta(slug, valor_setup, valor_manutencao, justificativa)`.
+   `registrar_proposta(slug, valor_setup, valor_manutencao, justificativa)`
+   (ainda sem `mensagem`/`canal` — isso vem no passo seguinte).
 2. `clarice` (já acionado na Fase 4 para o texto da página) — reuse
-   o mesmo agente para redigir o e-mail de proposta, seguindo a skill
-   `proposta-email` (rapport, sem preço, checklist anti-spam). Isso não é
-   uma nova invocação genérica: peça a ele especificamente o e-mail,
-   passando os achados relevantes (elogio verificável, defeito objetivo
-   do site antigo, link da página-capa).
+   o mesmo agente para redigir a mensagem de WhatsApp (seção "Mensagem de
+   proposta" de `agents/clarice.md`: elogio verificável, defeito objetivo
+   do site antigo, link único da página-capa, curta, sem preço). Só use
+   a alternativa de e-mail (skill `proposta-email`) se o lead
+   excepcionalmente não tiver WhatsApp válido.
 3. **`lia` (gate obrigatório e bloqueante, RF-16)** (`agents/lia.md`) —
    monte o payload EXATO de dados pessoais que vai para fora (tipicamente
-   `nome`, `email`, `whatsapp` usados no e-mail/assinatura) e peça o
-   veredito. **Se `lia` bloquear, PARE aqui** — não envie o e-mail, não
-   persista a transição de estado, reporte ao operador os motivos
-   específicos por campo.
-4. Se `lia` aprovar: envie o e-mail via conector Gmail (rascunho ou envio
-   direto, conforme o modo do config), peça ao `carmem` para persistir
-   `pagina_revisada -> contato_realizado` e para marcar a proposta como
-   enviada via `marcar_proposta_enviada(slug)`.
+   `nome`, `whatsapp` usados na mensagem) e peça o veredito. **Se `lia`
+   bloquear, PARE aqui** — não prepare nada para envio, não persista a
+   transição de estado, reporte ao operador os motivos específicos por
+   campo.
+4. Se `lia` aprovar: peça ao `carmem` para persistir a mensagem
+   (`registrar_proposta(..., canal='whatsapp', mensagem=texto)`). **Isso
+   NÃO envia nada** — só deixa a mensagem pronta. O envio real é um
+   clique do operador no botão "Enviar mensagem" do card no dashboard
+   (abre `wa.me/<numero>?text=<mensagem>`); só nesse clique
+   `enviado_em` é gravado e a transição `pagina_revisada ->
+   contato_realizado` acontece (`lib/db.py::confirmar_envio_whatsapp`,
+   acionado pelo endpoint do dashboard — nenhum agente chama isso
+   diretamente).
 
-Registre a execução de cada agente via `lib/auditlog.py`. Leads sem e-mail
-confirmado não entram nesta cadeia — a abordagem para eles continua
-manual via WhatsApp (mesmo comportamento da v2), fora do gate de LGPD
-automatizado por enquanto.
+Registre a execução de cada agente via `lib/auditlog.py`.
 
 **Nota de reversibilidade (Fase 6):** o gate de LGPD e a Precificação são
 acionáveis isoladamente para inspeção/teste antes de entrar em uso pleno;

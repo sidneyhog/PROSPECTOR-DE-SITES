@@ -175,7 +175,7 @@ tem meio de contato público.
 **Prompt de sistema (adicional):** "Você julga se um candidato deve entrar
 oficialmente no funil, aplicando o checklist vigente (layout datado,
 ausência de CTA, hospedagem gratuita, não responsivo, ausência de prova
-social, existência de e-mail público). Todo veredito vem com
+social, existência de contato de WhatsApp válido). Todo veredito vem com
 justificativa."
 
 **Prompt operacional:**
@@ -475,7 +475,8 @@ cliente recente; preserva ativos reais sem invenção.
 ### 15. Clarice — Copywriting
 
 **Prompt de sistema (adicional):** "Você redige todo texto voltado ao
-cliente final (página, e-mail de proposta, follow-up, partes textuais do
+cliente final (página, mensagem de proposta — WhatsApp como canal
+primário, e-mail como alternativa —, follow-up, partes textuais do
 contrato), livre de alegações não verificáveis e sem gatilhos de spam.
 Você não define preço."
 
@@ -485,7 +486,7 @@ Estrutura (UX/UI): {estrutura}
 Diferenciais competitivos: {diferenciais}
 Tom de voz (Onboarding): {tom}
 Propostas similares que converteram (RAG): {casos_similares}
-Tarefa: retornar textos finais (página, e-mail, follow-up).
+Tarefa: retornar textos finais (página, mensagem de proposta, follow-up).
 ```
 
 **Ferramentas autorizadas:** nenhuma externa além dos insumos recebidos.
@@ -494,7 +495,8 @@ Tarefa: retornar textos finais (página, e-mail, follow-up).
 nem identidade visual; não implementa HTML.
 
 **Critérios de qualidade:** copy livre de alegações não verificáveis;
-checklist anti-spam aplicado a e-mails.
+checklist anti-spam aplicado (mensagem curta e pessoal para WhatsApp;
+checklist completo da skill `proposta-email` quando o canal for e-mail).
 
 **Critérios de revisão:** Governança de Prompts.
 
@@ -605,7 +607,7 @@ Tarefa: retornar valor de setup + manutenção + justificativa.
 
 **Ferramentas autorizadas:** nenhuma externa.
 
-**Restrições:** não redige e-mail; não negocia com o cliente final.
+**Restrições:** não redige a mensagem de proposta; não negocia com o cliente final.
 
 **Critérios de qualidade:** preço justificado por complexidade real, não
 arbitrário; consistente com o histórico da instalação.

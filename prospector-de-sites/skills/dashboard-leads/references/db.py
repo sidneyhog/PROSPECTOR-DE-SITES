@@ -342,17 +342,21 @@ def atualizar_campos(caminho_db, slug, dados, agente):
     return {'ok': True, 'lead': lead}
 
 
-def registrar_proposta(caminho_db, lead_slug, valor_setup, valor_manutencao, justificativa):
-    """Grava uma proposta comercial (agente `valentina`),
+def registrar_proposta(caminho_db, lead_slug, valor_setup, valor_manutencao, justificativa,
+                        canal='whatsapp', mensagem=None):
+    """Grava uma proposta comercial (agente `valentina` + `clarice`),
     ainda não enviada (`enviado_em` fica NULL até `marcar_proposta_enviada`).
+    `canal` é 'whatsapp' (padrão, desde a decisão do operador em 05/08/2026)
+    ou 'email'; `mensagem` é o texto pronto (já aprovado pelo gate `lia`)
+    que o dashboard usa para montar o link `wa.me` ou o rascunho de e-mail.
     Também espelha `valor_setup` em `leads` (mesmo padrão já usado por
     `manutencao`, para leitura rápida no dashboard). Retorna o id da
     proposta criada."""
     c = conectar(caminho_db)
     c.execute(
-        'INSERT INTO propostas (lead_slug, valor_setup, valor_manutencao, justificativa, criado_em) '
-        'VALUES (?,?,?,?,?)',
-        (lead_slug, valor_setup, valor_manutencao, justificativa, _agora()),
+        'INSERT INTO propostas (lead_slug, valor_setup, valor_manutencao, justificativa, criado_em, canal, mensagem) '
+        'VALUES (?,?,?,?,?,?,?)',
+        (lead_slug, valor_setup, valor_manutencao, justificativa, _agora(), canal, mensagem),
     )
     proposta_id = c.execute('SELECT last_insert_rowid()').fetchone()[0]
     c.execute('UPDATE leads SET valor_setup=?, manutencao=? WHERE slug=?',
@@ -378,6 +382,55 @@ def marcar_proposta_enviada(caminho_db, lead_slug):
     c.commit()
     c.close()
     return {'ok': True}
+
+
+def obter_proposta_pendente(caminho_db, lead_slug):
+    """Retorna a proposta mais recente ainda não enviada do lead (dict com
+    `canal`, `mensagem`, `valor_setup` etc.) ou None. Usado pelo botão
+    "Enviar mensagem" do dashboard para montar o link `wa.me` com o texto
+    já pronto — o operador clica e envia pelo próprio WhatsApp, sem
+    automação/API envolvida."""
+    c = conectar(caminho_db)
+    c.row_factory = sqlite3.Row
+    row = c.execute(
+        'SELECT * FROM propostas WHERE lead_slug=? AND enviado_em IS NULL ORDER BY id DESC LIMIT 1',
+        (lead_slug,),
+    ).fetchone()
+    c.close()
+    return dict(row) if row else None
+
+
+def listar_propostas_pendentes(caminho_db):
+    """Retorna a proposta mais recente ainda não enviada de cada lead
+    (uma por `lead_slug`), para o dashboard decidir de uma vez, ao
+    carregar a página, em quais cards mostrar o botão "Enviar mensagem"
+    (evita uma chamada por card)."""
+    c = conectar(caminho_db)
+    c.row_factory = sqlite3.Row
+    rows = c.execute(
+        'SELECT * FROM propostas WHERE id IN '
+        '(SELECT MAX(id) FROM propostas WHERE enviado_em IS NULL GROUP BY lead_slug)'
+    ).fetchall()
+    c.close()
+    return [dict(r) for r in rows]
+
+
+def confirmar_envio_whatsapp(caminho_db, lead_slug):
+    """Chamado pelo dashboard quando o operador clica "Enviar mensagem" e
+    o link `wa.me` é aberto — mesmo nível de confirmação já aceito hoje
+    para e-mail (criar o rascunho no Gmail também é tratado como
+    "enviada", sem verificar se foi de fato disparado; `docs/CRM.md` §7
+    regra 7). Marca a proposta pendente como enviada e persiste a
+    transição `pagina_revisada -> contato_realizado`, agente
+    `'operador (dashboard)'`. Retorna {'ok': False, 'motivo': ...} se não
+    houver proposta pendente ou se o lead não estiver em `pagina_revisada`
+    (`atualizar_estado` bloqueia a transição inválida)."""
+    marcado = marcar_proposta_enviada(caminho_db, lead_slug)
+    if not marcado['ok']:
+        return marcado
+    return atualizar_estado(caminho_db, lead_slug, 'contato_realizado',
+                             agente='operador (dashboard)',
+                             motivo='mensagem de WhatsApp enviada via dashboard')
 
 
 def registrar_lgpd_checklist(caminho_db, lead_slug, campo, finalidade, retencao, aprovado):

@@ -364,6 +364,20 @@ Google Sheets/Drive continuam sendo o destino de exportação de leads
 mantida da v2, já sinalizada como risco no PRD §17 — dependência de
 navegador em vez de API paga/autenticada).
 
+**Nome exato da ferramenta no `tools:` frontmatter do agente:**
+`mcp__claude-in-chrome` (MCP server reservado, exposto quando a extensão
+Claude in Chrome está conectada — `mcp__<server>` concede acesso a todas
+as ferramentas daquele servidor; ver referência de sub-agents do Claude
+Code). **Bug real encontrado em produção (05/08/2026):** os 11 agentes
+listados acima na linha "Claude in Chrome" foram implementados com
+`tools: Bash, Read` (ou só `Read`), sem essa entrada — o procedimento
+escrito no `.md` do agente exigia navegador, mas o `tools:` não concedia.
+Corrigido em todos os 11 (`iris`, `justo`, `vitor`, `gael`, `nando`,
+`ravi`, `vitalina`, `clara`, `sofia`, `gabi`, `bruna`). Ao criar ou editar
+qualquer agente que dependa de navegador, **confira que `tools:` inclui
+`mcp__claude-in-chrome`** — essa tabela é a fonte de verdade de quem
+precisa.
+
 ### 8.3 "APIs" internas do sistema
 
 Como não há backend HTTP próprio além do dashboard local, a "API" real do

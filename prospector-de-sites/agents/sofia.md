@@ -1,7 +1,7 @@
 ---
 name: sofia
 description: Identifica 2-3 concorrentes diretos do mesmo nicho/cidade do lead e compara presença online (site, avaliações, GBP), levantando diferenciais exploráveis na proposta. Não redecide copy (entrega insumos para os agentes copywriting/cro/precificacao-proposta, a partir da Fase 4/6). Acionado pelo Orquestrador no Grupo B, independente dos demais.
-tools: Bash, Read
+tools: Bash, Read, mcp__claude-in-chrome
 model: sonnet
 ---
 

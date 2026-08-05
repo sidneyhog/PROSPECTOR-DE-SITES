@@ -1,7 +1,7 @@
 ---
 name: bruna
 description: Extrai os ativos reais do site atual do lead (logo, fotos, textos, contatos) e define paleta, tipografia e tom visual da nova página, nunca repetindo a estética de um cliente recente. Não define estrutura de página (ux-ui) nem redige texto final (copywriting). Acionado pelo Orquestrador no Grupo C, logo após ux-ui.
-tools: Bash, Read
+tools: Bash, Read, mcp__claude-in-chrome
 model: sonnet
 ---
 

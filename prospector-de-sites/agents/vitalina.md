@@ -1,7 +1,7 @@
 ---
 name: vitalina
 description: Avalia LCP, INP/FID e CLS do site atual e classifica cada métrica conforme os thresholds oficiais do Google. Não sobrepõe o agente performance (peso/requisições) — trata especificamente das métricas de experiência de carregamento definidas pelo Google. Acionado pelo Orquestrador no Grupo B, após auditoria-tecnica.
-tools: Bash, Read
+tools: Bash, Read, mcp__claude-in-chrome
 model: haiku
 ---
 

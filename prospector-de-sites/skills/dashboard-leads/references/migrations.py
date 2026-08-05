@@ -199,6 +199,24 @@ def _m8_prompts_versionamento_e_embeddings(c):
         criado_em TEXT NOT NULL)''')
 
 
+@_migracao(9)
+def _m9_canal_whatsapp(c):
+    """Decisão do operador (05/08/2026): WhatsApp passa a ser o canal
+    primário de contato com o lead, no lugar do e-mail — taxa de resposta
+    observada por e-mail frio é baixa. `canal` registra qual canal essa
+    proposta usa ('whatsapp' ou 'email', `whatsapp` é o padrão a partir de
+    agora); `mensagem` guarda o texto pronto (gerado por `clarice`,
+    aprovado pelo gate de `lia`) que o operador envia clicando no botão
+    "Enviar mensagem" do dashboard (abre `wa.me/<numero>?text=<mensagem>`
+    — o operador clica enviar no próprio WhatsApp, sem automação/API
+    envolvida, RNF de anti-banimento). `enviado_em` aqui é preenchido
+    manualmente pelo dashboard quando o operador confirma que enviou (não
+    dá pra detectar clique no link `wa.me`, diferente do rascunho do
+    Gmail)."""
+    _add_coluna_se_faltando(c, 'propostas', 'canal', "TEXT NOT NULL DEFAULT 'whatsapp'")
+    _add_coluna_se_faltando(c, 'propostas', 'mensagem', 'TEXT')
+
+
 def versao_atual(c):
     c.execute("CREATE TABLE IF NOT EXISTS schema_version (versao INTEGER NOT NULL)")
     row = c.execute("SELECT versao FROM schema_version").fetchone()

@@ -69,7 +69,7 @@ Nomes próprios dos agentes entre parênteses — glossário completo em
 | `site_auditado` | `pagina_gerada` | Dossiê (`auditorias`) existente e recente (janela de cache — `ARQUITETURA_TECNICA.md` §6) | Front-end (Fê, última etapa do Grupo C) → Carmem | Arquivos `pagina.html`, `pagina-editor.html`, `comparar.html` gravados |
 | `pagina_gerada` | `pagina_revisada` | Veredito de QA = aprovado | QA (Quel) → Carmem | `interacoes` |
 | `pagina_gerada` | `pagina_gerada` (loop) | Veredito de QA = reprovado | Quel → Carmem | `interacoes` com lista de motivos; Orquestrador reaciona agente responsável |
-| `pagina_revisada` | `contato_realizado` | LGPD = aprovado (gate obrigatório, RF-16) **e** `propostas.valor_setor` definido pela Precificação | LGPD (Lia, gate) + Precificação (Valentina) + Copywriting (Clarice) → Carmem | `propostas` (nova linha, `enviado_em`); e-mail enviado via conector Gmail |
+| `pagina_revisada` | `contato_realizado` | LGPD = aprovado (gate obrigatório, RF-16) **e** `propostas.valor_setup` definido pela Precificação **e** operador confirmou o envio no dashboard | LGPD (Lia, gate) + Precificação (Valentina) + Copywriting (Clarice) → Carmem | `propostas` (nova linha, `canal='whatsapp'`, `mensagem`); operador clica "Enviar mensagem" no dashboard (abre `wa.me/<numero>?text=<mensagem>`) e confirma envio manualmente — `enviado_em` só é preenchido nessa confirmação, não há detecção automática de clique (decisão 05/08/2026, §7 nota sobre WhatsApp) |
 | `pagina_revisada` | `pagina_revisada` (bloqueio) | LGPD = bloqueado | Lia → Carmem | Nenhuma transição; `lgpd_checklist.aprovado = 0` registrado, operador notificado |
 | `contato_realizado` | `negociacao` | Resposta detectada (Follow-up/Gmail) | Follow-up (Fabi) → Carmem | `propostas.respondido_em` |
 | `contato_realizado` | `follow_up` | N dias sem resposta (configurável, default herdado da v2) | Fabi → Carmem | `followups` (nova tentativa) |
@@ -176,6 +176,23 @@ Padronizado para permitir análise agregada (alimenta Analytics/Relatórios):
    registro em `interacoes` (agente `"operador (dashboard)"`) — decisão
    tomada na Fase 9 (`docs/PLANO_IMPLEMENTACAO.md` §12), resolvendo um gap
    encontrado na Fase 8.
+7. **Envio e resposta por WhatsApp são confirmados manualmente pelo
+   operador, não detectados automaticamente.** Diferente do e-mail (onde
+   `/respostas` lê o Gmail e detecta resposta sozinho), o envio da
+   mensagem de WhatsApp é um clique do operador no botão "Enviar mensagem"
+   do dashboard: abre `wa.me/<numero>?text=<mensagem>` numa aba nova (sem
+   API/automação — decisão do operador em 05/08/2026) e, no mesmo clique,
+   grava `propostas.enviado_em` e persiste `pagina_revisada ->
+   contato_realizado` — mesmo nível de confirmação já aceito hoje para
+   e-mail (criar o rascunho no Gmail também já é tratado como "enviada",
+   sem verificação de que o rascunho foi de fato disparado). A diferença
+   real fica na **detecção de resposta**: `contato_realizado ->
+   negociacao` hoje só acontece via `/respostas` lendo Gmail — para leads
+   contatados por WhatsApp, o operador precisa mover o card manualmente
+   quando o lead responder (mesmo canal de override da regra 6), até que
+   uma integração de leitura de WhatsApp seja avaliada (não planejada —
+   risco de banimento também se aplica a ler mensagens automaticamente,
+   não só a enviar em massa).
 
 ## 8. Visões do dashboard (evolução das já existentes na v2)
 

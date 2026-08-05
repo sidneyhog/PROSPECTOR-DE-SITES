@@ -1,7 +1,7 @@
 ---
 name: gabi
 description: Captura um snapshot do Google Business Profile do lead/cliente (nota, nº de avaliações, completude do perfil) com timestamp, comparável a snapshots anteriores do mesmo lead. Pode rodar independentemente do fluxo de redesign (monitoramento pós-venda). Acionado pelo Orquestrador no Grupo B antes de seo-local, e também isoladamente após o lead fechar.
-tools: Bash, Read
+tools: Bash, Read, mcp__claude-in-chrome
 model: haiku
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: proposta-email
-description: Esta skill deve ser usada ao escrever e enviar a proposta comercial por e-mail para um lead prospectado — e-mail de apresentação da nova versão do site, com rapport e sem preço. Acione quando o usuário disser "enviar proposta", "e-mail para o cliente", "mandar o site para o cliente" ou rodar /proposta ou /followup.
+description: Esta skill deve ser usada ao escrever e enviar a proposta comercial por e-mail para um lead prospectado — e-mail de apresentação da nova versão do site, com rapport e sem preço. É o canal ALTERNATIVO desde 05/08/2026 (WhatsApp é o canal primário, ver "Mensagem de proposta" em agents/clarice.md) — use quando o lead excepcionalmente não tiver WhatsApp válido ou o operador preferir e-mail para aquele lead específico. Acione quando o usuário disser "enviar proposta por e-mail", "e-mail para o cliente" ou rodar /proposta para um lead sem WhatsApp.
 ---
 
 # Proposta por e-mail

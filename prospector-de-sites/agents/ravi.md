@@ -1,7 +1,7 @@
 ---
 name: ravi
 description: Avalia peso de página, número de requisições e uso de cache/compressão do site atual, quantificando achados sempre que possível. Não avalia Core Web Vitals (agente core-web-vitals) — trata do diagnóstico técnico geral de velocidade. Acionado pelo Orquestrador no Grupo B, após auditoria-tecnica.
-tools: Bash, Read
+tools: Bash, Read, mcp__claude-in-chrome
 model: haiku
 ---
 
