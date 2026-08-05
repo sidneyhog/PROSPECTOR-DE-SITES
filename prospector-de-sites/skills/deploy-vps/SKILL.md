@@ -7,9 +7,8 @@ description: Esta skill deve ser usada ao publicar páginas em VPS própria (SSH
 
 Publicar páginas em `[caminhoRemoto]/[pastaBase]/[slug]/` no servidor do
 usuário e garantir a URL pública `https://[dominio]/[pastaBase]/[slug]/`
-funcionando. Substitui o fluxo HostGator/cPanel da v2 — `deploy-hostgator`
-continua disponível como caminho secundário/manual para quem ainda não
-migrou (ver "Migração de instalações HostGator" ao final).
+funcionando. Único caminho de publicação da plataforma (o antigo fluxo
+HostGator/cPanel da v2 foi removido — `docs/PLANO_IMPLEMENTACAO.md` §12).
 
 ## Credenciais
 
@@ -53,8 +52,8 @@ deploy.
 ## Método 1 — Publicador automático local (RECOMENDADO: instala uma vez, nunca mais clica)
 
 A rede do sandbox do Cowork pode não alcançar a porta SSH da VPS do
-usuário — vale o mesmo aviso do HostGator. A publicação roda na máquina do
-usuário via um publicador instalado no agendador do sistema: a cada minuto
+usuário. A publicação roda na máquina do usuário via um publicador
+instalado no agendador do sistema: a cada minuto
 ele verifica a fila e sobe o que houver, escondido, lendo as credenciais
 do config. O usuário instala UMA vez e o `/publicar` vira 100% automático.
 
@@ -77,8 +76,8 @@ do config. O usuário instala UMA vez e o `/publicar` vira 100% automático.
    botão direito → Abrir na primeira vez). Só uma vez na vida.
 3. **Monte a fila**: escreva `fila-publicacao.txt` na raiz da pasta
    conectada, uma linha por arquivo: `caminho/local/arquivo.html|[pastaBase]/[slug]/index.html`
-   (mesmo formato já usado no HostGator — o caminho remoto aqui é relativo
-   a `caminhoRemoto`). Inclua página (`index.html`) e capa
+   (o caminho remoto aqui é relativo a `caminhoRemoto`). Inclua página
+   (`index.html`) e capa
    (`proposta.html`) de cada cliente. Em até 1 minuto o publicador sobe
    tudo sozinho e renomeia a fila para `fila-publicada-[data].txt` (log em
    `publicador-log.txt`).
@@ -134,12 +133,3 @@ Publique `teste.html` simples ("Funcionou!") em
 bloqueado, já deixe os scripts do Método 1 copiados na pasta, monte a fila
 com o teste e peça os 2 cliques — assim o usuário aprende o fluxo logo no
 setup.
-
-## Migração de instalações HostGator
-
-Instalações que já usavam `deploy-hostgator` continuam funcionando sem
-mudança — o bloco `hostgator` do config é só leitura para elas (nunca
-mais escrito, `docs/ARQUITETURA_TECNICA.md` §4.3). Para migrar: rodar
-`/setup` de novo e preencher o bloco `vps` na aba Configurações do
-dashboard. Os dois blocos podem coexistir no mesmo `prospector-config.json`
-durante a transição.

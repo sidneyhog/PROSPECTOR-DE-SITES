@@ -158,12 +158,6 @@ Se `diego` retornar `bloqueado` (todos os 3 métodos falharam), reporte ao
 operador o erro específico de cada método tentado — não marque como
 concluído sem HTTPS confirmado.
 
-**Nota de reversibilidade (Fase 5):** a skill `deploy-hostgator` da v2
-continua disponível para instalações que ainda não migraram para VPS
-própria (bloco `hostgator` do config, somente leitura para elas). Migrar é
-opcional e a critério do operador — rodar `/setup` de novo para preencher
-o bloco `vps`.
-
 ## Comercial: Precificação + gate de LGPD (transição `pagina_revisada -> contato_realizado`)
 
 Para um lead `pagina_revisada` já publicado (com `urlNova`/

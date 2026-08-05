@@ -37,10 +37,3 @@ Listar, por cliente: URL da página nova e URL da capa
 (`.../proposta.html`), ambas com HTTPS confirmado. Sugerir o próximo
 passo: `/proposta` para enviar os e-mails.
 
-## Reversibilidade (Fase 5)
-
-A skill `deploy-hostgator` da v2 continua disponível e inalterada, para
-instalações que ainda não migraram para VPS própria — o bloco `hostgator`
-do config permanece funcional (somente leitura por este comando; a
-publicação por HostGator continua acionável manualmente seguindo a skill
-diretamente, se o operador preferir não migrar ainda).

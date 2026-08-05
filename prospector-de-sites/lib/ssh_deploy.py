@@ -9,8 +9,8 @@ Ver docs/PLANO_IMPLEMENTACAO.md §8 (Fase 5) e docs/ARQUITETURA_TECNICA.md
 §8.2 (integração SSH).
 
 Usado pelo agente `diego` (Método 2 — "tentar publicar direto do
-sandbox", análogo ao Método 2 de FTP silencioso de `deploy-hostgator`).
-Se `ssh`/`scp` não estiverem disponíveis, ou a rede do sandbox bloquear,
+sandbox"). Se `ssh`/`scp` não estiverem disponíveis, ou a rede do sandbox
+bloquear,
 o agente cai para o Método 1 (publicador automático local) ou o Método 3
 (instrução copiável) da skill `deploy-vps` — esta função apenas tenta e
 reporta sucesso/falha, nunca insiste.

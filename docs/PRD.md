@@ -8,7 +8,7 @@ alterada para produzir este documento.** As Etapas 2–7 (arquitetura
 multi-agente detalhada, arquitetura técnica, CRM, memória, prompts e plano
 de implementação incremental) só começam após aprovação explícita deste PRD.
 
-Status: **aguardando aprovação**.
+Status: **aprovado**.
 
 ---
 

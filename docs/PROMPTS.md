@@ -8,7 +8,7 @@ os critérios de qualidade/revisão/aprovação. É a última especificação an
 do plano de implementação (Etapa 7). Nenhum código foi alterado para
 produzir este documento.
 
-Status: **aguardando aprovação**.
+Status: **aprovado**.
 
 **Nota de nomenclatura (Fase 9 de `docs/PLANO_IMPLEMENTACAO.md`):** cada
 agente tem um nome próprio humanizado além da função técnica (ex.: "Atlas
