@@ -10,6 +10,11 @@ produzir este documento.
 
 Status: **aguardando aprovação**.
 
+**Nota de nomenclatura (Fase 9):** cada agente citado aqui pela função
+técnica também tem um nome próprio humanizado (ex.: Prospecção = Íris,
+Inteligência Competitiva = Sofia) — glossário completo em
+`docs/AGENTES.md`.
+
 ---
 
 ## 1. Princípio geral

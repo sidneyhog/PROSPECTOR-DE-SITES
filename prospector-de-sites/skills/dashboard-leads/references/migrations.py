@@ -109,7 +109,7 @@ def _m3_auditorias_e_gbp(c):
 def _m4_estetica_historico(c):
     """Fase 4 (docs/PLANO_IMPLEMENTACAO.md §7): histórico de estética usada
     por lead (paleta, tipografia, layout de hero), para os agentes
-    `ux-ui` e `branding` não repetirem a direção estética de clientes
+    `nina` e `bruna` não repetirem a direção estética de clientes
     recentes. Ver docs/ARQUITETURA_TECNICA.md §4.2 (coluna `layout_hero`
     é uma extensão aditiva ao schema ali documentado, para cobrir também a
     regra de não repetir layout de hero, já vigente na v2)."""
@@ -137,8 +137,8 @@ def _m5_https_validado(c):
 @_migracao(6)
 def _m6_propostas_e_lgpd(c):
     """Fase 6 (docs/PLANO_IMPLEMENTACAO.md §9): separa preço (tabela
-    `propostas`, agente `precificacao-proposta`) de redação (agente
-    `copywriting`, Fase 4), e introduz o gate de conformidade LGPD
+    `propostas`, agente `valentina`) de redação (agente
+    `clarice`, Fase 4), e introduz o gate de conformidade LGPD
     obrigatório antes de qualquer envio externo (RF-16). Ver
     docs/ARQUITETURA_TECNICA.md §4.2. `leads.valor_setup` é um espelho
     denormalizado do valor da proposta mais recente, para leitura rápida
@@ -179,7 +179,7 @@ def _m7_followups(c):
 @_migracao(8)
 def _m8_prompts_versionamento_e_embeddings(c):
     """Fase 8 (docs/PLANO_IMPLEMENTACAO.md §11): versionamento de prompts
-    (agente `governanca-prompts`) e memória compartilhada via embeddings/
+    (agente `gustavo`) e memória compartilhada via embeddings/
     RAG (docs/MEMORIA.md §9). Ver docs/ARQUITETURA_TECNICA.md §4.2."""
     c.execute('''CREATE TABLE IF NOT EXISTS prompts_versionamento(
         id INTEGER PRIMARY KEY AUTOINCREMENT,

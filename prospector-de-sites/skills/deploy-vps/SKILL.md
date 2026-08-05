@@ -64,7 +64,7 @@ do config. O usuário instala UMA vez e o `/publicar` vira 100% automático.
    - **Windows**: `publicar-agora.ps1`, `publicar-agora.bat`,
      `publicador-oculto.vbs`, `instalar-publicador.bat` — usa
      `pscp.exe`/`plink.exe` (PuTTY, baixados uma vez no `/setup`, ver
-     `commands/setup.md` item 7A / `agents/onboarding.md`).
+     `commands/setup.md` item 7A / `agents/bia.md`).
    - **Mac**: `publicar-agora.command` e `instalar-publicador.command` —
      usa `scp`/`ssh` nativos (chave) ou `sshpass` (senha, `brew install
      sshpass`).
@@ -123,7 +123,7 @@ peça a senha no chat).
    realmente aponta pra VPS (DNS) e se o certbot renovou automaticamente
    (`certbot renew --dry-run` no servidor). Link `http://` NUNCA vai para
    cliente.
-3. Registre `urlNova` e `https_validado_em` no lead via o agente `crm`
+3. Registre `urlNova` e `https_validado_em` no lead via o agente `carmem`
    (`atualizar_campos`, não é uma transição de estado —
    `docs/CRM.md` §3).
 

@@ -3,7 +3,7 @@ description: Busca no Google Maps negócios bem avaliados com sites ruins, quali
 argument-hint: "[nicho] [cidade] — opcional, usa os padrões do config"
 ---
 
-Acione o Orquestrador (`agents/orquestrador.md`) para processar este
+Acione o Orquestrador (`agents/atlas.md`) para processar este
 comando.
 
 ## O que o Orquestrador deve fazer
@@ -14,19 +14,19 @@ comando.
    informados; senão, perguntar ao usuário qual dos nichos padrão do
    config usar (e confirmar a cidade). O usuário SEMPRE pode trocar nicho
    e cidade na hora — nunca travar nos padrões.
-3. Perguntar ao agente `crm` (`agents/crm.md`) quais leads já existem no
+3. Perguntar ao agente `carmem` (`agents/carmem.md`) quais leads já existem no
    CRM para este nicho/cidade — usar essa lista para excluir duplicatas da
    nova busca (RF-04, `docs/AGENTES.md` §3).
-4. Acionar o agente `prospeccao` (`agents/prospeccao.md`) passando nicho,
+4. Acionar o agente `iris` (`agents/iris.md`) passando nicho,
    cidade, meta de candidatos (config, padrão 10) e a lista de já
    conhecidos. Registrar a execução via `lib/auditlog.py`.
-5. Para cada candidato retornado por `prospeccao`:
-   a. Acionar o agente `crm` para persistir a criação do lead
+5. Para cada candidato retornado por `iris`:
+   a. Acionar o agente `carmem` para persistir a criação do lead
       (`None -> encontrado`) com os dados coletados.
-   b. Acionar o agente `qualificacao-leads` (`agents/qualificacao-leads.md`)
+   b. Acionar o agente `justo` (`agents/justo.md`)
       com os dados do candidato. Registrar a execução via
       `lib/auditlog.py`.
-   c. Acionar o agente `crm` para persistir o veredito:
+   c. Acionar o agente `carmem` para persistir o veredito:
       `encontrado -> qualificado` (com o motivo e o e-mail encontrado) ou
       `encontrado -> perdido` (com `motivo=nao_qualificado: ...`).
 6. Ao final da busca, se pelo menos um candidato ficou `qualificado`,
@@ -35,7 +35,7 @@ comando.
    Web Vitals, acessibilidade, inteligência competitiva, Google Business
    Profile) para os leads recém-qualificados deste lote — padrão sugerido:
    sim. Se confirmado, siga a seção "Grupo B de diagnóstico" de
-   `agents/orquestrador.md` para cada lead qualificado, até
+   `agents/atlas.md` para cada lead qualificado, até
    `site_auditado` ou um bloqueio reportável. Se o operador preferir
    revisar a lista antes, pule esta etapa — o lead fica `qualificado` e
    pode ser levado a `em_analise` depois, reacionando o mesmo fluxo.
