@@ -176,6 +176,29 @@ def _m7_followups(c):
         respondido INTEGER NOT NULL DEFAULT 0)''')
 
 
+@_migracao(8)
+def _m8_prompts_versionamento_e_embeddings(c):
+    """Fase 8 (docs/PLANO_IMPLEMENTACAO.md §11): versionamento de prompts
+    (agente `governanca-prompts`) e memória compartilhada via embeddings/
+    RAG (docs/MEMORIA.md §9). Ver docs/ARQUITETURA_TECNICA.md §4.2."""
+    c.execute('''CREATE TABLE IF NOT EXISTS prompts_versionamento(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        agente TEXT NOT NULL,
+        versao TEXT NOT NULL,
+        hash TEXT NOT NULL,
+        aprovado_em TEXT,
+        observacoes TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS embeddings(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ref_tipo TEXT NOT NULL,
+        ref_id TEXT NOT NULL,
+        nicho TEXT,
+        texto_fonte TEXT NOT NULL,
+        vetor_json TEXT NOT NULL,
+        modelo TEXT NOT NULL,
+        criado_em TEXT NOT NULL)''')
+
+
 def versao_atual(c):
     c.execute("CREATE TABLE IF NOT EXISTS schema_version (versao INTEGER NOT NULL)")
     row = c.execute("SELECT versao FROM schema_version").fetchone()

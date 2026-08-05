@@ -183,10 +183,16 @@ var MODE='file';
 function aplicaOv(arr){return arr.filter(function(l){return !(OV[l.slug]&&OV[l.slug]._del)}).map(function(l){return Object.assign({},l,OV[l.slug]||{})})}
 var leads=aplicaOv(D.leads||[]);
 if(Object.keys(OV).length)document.getElementById('limpar-ov')&&(document.getElementById('limpar-ov').style.display='inline-block');
-fetch('/api/leads',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){MODE='db';leads=j;fetch('/api/config',{cache:'no-store'}).then(function(r){return r.json()}).then(function(c){CFG=(c&&c.contratante!==undefined)?c.contratante:c;HG=(c&&c.hostgator)||{};VPS=(c&&c.vps)||{};if(view==='config')render()});var m=document.getElementById('modo');m.textContent='banco conectado';m.className='modo db';m.title='Alterações salvas no prospector.db';var lb=document.getElementById('limpar-ov');if(lb)lb.style.display='none';render()}).catch(function(){});
-var CORES={novo:'var(--novo)',redesenhado:'var(--rede)',publicado:'var(--pub)',proposta:'var(--prop)',respondeu:'var(--resp)',fechado:'var(--fech)',descartado:'var(--cinza)'};
-var NOMES={novo:'Novo',redesenhado:'Redesenhado',publicado:'Publicado',proposta:'Proposta enviada',respondeu:'Respondeu',fechado:'Fechado',descartado:'Descartado'};
-var ORDEM=['novo','redesenhado','publicado','proposta','respondeu','fechado'];
+fetch('/api/leads',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){MODE='db';leads=j;fetch('/api/config',{cache:'no-store'}).then(function(r){return r.json()}).then(function(c){CFG=(c&&c.contratante!==undefined)?c.contratante:c;HG=(c&&c.hostgator)||{};VPS=(c&&c.vps)||{};if(view==='config')render()});fetch('/api/execucoes',{cache:'no-store'}).then(function(r){return r.json()}).then(function(e){EXEC=e||[];if(view==='execucoes')render()}).catch(function(){});var m=document.getElementById('modo');m.textContent='banco conectado';m.className='modo db';m.title='Alterações salvas no prospector.db';var lb=document.getElementById('limpar-ov');if(lb)lb.style.display='none';render()}).catch(function(){});
+var CORES={novo:'var(--novo)',redesenhado:'var(--rede)',publicado:'var(--pub)',proposta:'var(--prop)',respondeu:'var(--resp)',fechado:'var(--fech)',descartado:'var(--cinza)',
+ encontrado:'#7A8CA8',qualificado:'#8B9B5C',em_analise:'#B98A4A',site_auditado:'#5E9DA8',pagina_gerada:'#9C7BB8',pagina_revisada:'#6A9B72',contato_realizado:'#C98A2D',negociacao:'#D9A441',follow_up:'#C9762D',perdido:'#B7B2A7'};
+var NOMES={novo:'Novo',redesenhado:'Redesenhado',publicado:'Publicado',proposta:'Proposta enviada',respondeu:'Respondeu',fechado:'Fechado',descartado:'Descartado',
+ encontrado:'Encontrado',qualificado:'Qualificado',em_analise:'Em análise',site_auditado:'Site auditado',pagina_gerada:'Página gerada',pagina_revisada:'Página revisada',contato_realizado:'Contato realizado',negociacao:'Negociação',follow_up:'Follow-up',perdido:'Perdido'};
+// ORDEM: vocabulário legado da v2 primeiro (compatibilidade), depois o pipeline novo da v3
+// (docs/CRM.md §2.1) — os dois convivem: leads antigos continuam com status legado até
+// serem tocados de novo; leads criados pelos agentes a partir da Fase 2 usam o vocabulário novo.
+var ORDEM=['novo','redesenhado','publicado','proposta','respondeu',
+ 'encontrado','qualificado','em_analise','site_auditado','pagina_gerada','pagina_revisada','contato_realizado','negociacao','follow_up','fechado'];
 var view='geral',busca='',sortCol='nome',sortAsc=true,pag=1,porPag='auto';
 function pagSize(){if(porPag!=='auto')return porPag;var v=document.getElementById('view');var h=v?v.clientHeight:600;return Math.max(4,Math.floor((h-165)/59))}
 document.getElementById('upd').textContent='atualizado em '+(D.atualizado||'—');
@@ -220,7 +226,7 @@ function setView(v){view=v;render()}
 function nav(){
  var fu=fil().filter(function(l){return l.status==='proposta'&&dias(l.dataProposta)>=4});
  var fechadosN=fil().filter(function(l){return l.status==='fechado'}).length;
- var itens=[['geral','Visão geral',null],['pipeline','Pipeline',ativos().length],['clientes','Clientes',fil().length],['sites','Sites',fil().filter(function(l){return['redesenhado','publicado','proposta','respondeu','fechado'].indexOf(l.status)>=0}).length],['comparador','Comparador',fil().filter(function(l){return l.slug&&['redesenhado','publicado','proposta','respondeu','fechado'].indexOf(l.status)>=0}).length],['followup','Follow-ups',fu.length],['contratos','Contratos',fechadosN],['financeiro','Financeiro',null],['config','Configurações',null]];
+ var itens=[['geral','Visão geral',null],['pipeline','Pipeline',ativos().length],['clientes','Clientes',fil().length],['sites','Sites',fil().filter(function(l){return['redesenhado','publicado','proposta','respondeu','fechado'].indexOf(l.status)>=0}).length],['comparador','Comparador',fil().filter(function(l){return l.slug&&['redesenhado','publicado','proposta','respondeu','fechado'].indexOf(l.status)>=0}).length],['followup','Follow-ups',fu.length],['contratos','Contratos',fechadosN],['financeiro','Financeiro',null],['execucoes','Execuções',null],['auditoria','Auditoria',null],['lgpd','LGPD',null],['config','Configurações',null]];
  document.getElementById('nav').innerHTML=itens.map(function(i){return '<button class="'+(view===i[0]?'on':'')+'" onclick="setView(\''+i[0]+'\')">'+i[1]+(i[2]!==null?'<span class="qt">'+i[2]+'</span>':'')+'</button>'}).join('');
  document.getElementById('titulo').textContent=itens.filter(function(i){return i[0]===view})[0][1];
 }
@@ -250,7 +256,7 @@ function vGeral(){
  html+='<div class="painel"><h2>Follow-ups pendentes (4+ dias sem resposta)</h2>'+(fu.length?fu.map(function(l){return '<div class="fup-item"><b>'+l.nome+'</b><span class="dias">'+dias(l.dataProposta)+' dias</span><span style="color:var(--muted);font-size:12px">proposta em '+l.dataProposta+'</span>'+(l.whatsapp?'<a style="margin-left:auto;font-size:12px;font-weight:700;color:var(--accent-2)" href="https://wa.me/'+l.whatsapp+'" target="_blank">chamar no WhatsApp →</a>':'')+'</div>'}).join(''):'<div class="vazio">Nenhum follow-up pendente. 👌</div>')+'</div>';
  return html}
 function vPipeline(){var por={};fil().forEach(function(l){(por[l.status]=por[l.status]||[]).push(l)});
- return '<p class="dica-drag">Arraste um card para mudar o status — os automáticos (redesenhado, publicado, proposta) o plugin move sozinho; use o arrasto principalmente para <b>Respondeu</b> e <b>Fechado</b>.</p><div class="board">'+ORDEM.concat(['descartado']).map(function(s){var arr=por[s]||[];return '<div class="col" data-st="'+s+'" ondragover="dragSobre(event)" ondragleave="dragSai(event)" ondrop="solta(event,\''+s+'\')"><h3>'+NOMES[s]+'<span>'+arr.length+'</span></h3><div class="cards">'+(arr.length?arr.map(card).join(''):'<div class="vazio">solte aqui</div>')+'</div></div>'}).join('')+'</div>'}
+ return '<p class="dica-drag">Arraste um card para mudar o status — os automáticos (redesenhado, publicado, proposta) o plugin move sozinho; use o arrasto principalmente para <b>Respondeu</b> e <b>Fechado</b>.</p><div class="board">'+ORDEM.concat(['descartado','perdido']).map(function(s){var arr=por[s]||[];return '<div class="col" data-st="'+s+'" ondragover="dragSobre(event)" ondragleave="dragSai(event)" ondrop="solta(event,\''+s+'\')"><h3>'+NOMES[s]+'<span>'+arr.length+'</span></h3><div class="cards">'+(arr.length?arr.map(card).join(''):'<div class="vazio">solte aqui</div>')+'</div></div>'}).join('')+'</div>'}
 function vClientes(){var ls=fil().slice().sort(function(a,b){var x=a[sortCol]||'',y=b[sortCol]||'';return(x<y?-1:x>y?1:0)*(sortAsc?1:-1)});
  var pp=pagSize();var total=ls.length,paginas=Math.max(1,Math.ceil(total/pp));if(pag>paginas)pag=paginas;
  var ini=(pag-1)*pp,fim=Math.min(ini+pp,total);ls=ls.slice(ini,fim);
@@ -308,6 +314,29 @@ function salvarVps(){var body={};['host','porta','usuario','caminhoRemoto','domi
  fetch('/api/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({vps:body})}).then(function(){if(body.senha)VPS.senhaDefinida=true;['host','porta','usuario','caminhoRemoto','dominio','pastaBase','chaveSshPath'].forEach(function(k){if(body[k]!==undefined)VPS[k]=body[k]});var ok=document.getElementById('vps-ok');ok.style.display='inline';setTimeout(function(){ok.style.display='none';render()},1200)})}
 function ordenar(c){if(c==='x')return;if(sortCol===c)sortAsc=!sortAsc;else{sortCol=c;sortAsc=true}pag=1;render()}
 var cmpSel=null;var HG={};var VPS={};
+var EXEC=[];var auditoriaSlug='';var auditoriaDados=null;var lgpdSlug='';var lgpdDados=null;
+function vExecucoes(){
+ if(!EXEC.length)return '<div class="painel"><h2>Execuções de agentes</h2><div class="vazio">Nenhuma execução registrada ainda (disponível a partir da Fase 1 do plano de implementação — requer o banco conectado, não o modo arquivo).</div></div>';
+ return '<div class="painel tab"><h2>Execuções de agentes (mais recentes primeiro)</h2><div class="twrap"><table><thead><tr><th>Quando</th><th>Agente</th><th>Lead</th><th>Status</th><th>Resumo</th></tr></thead><tbody>'+EXEC.map(function(e){return '<tr><td>'+(e.concluido_em||'—')+'</td><td>'+e.agente+'</td><td>'+(e.lead_slug||'—')+'</td><td>'+pillStatus2(e.status)+'</td><td>'+(e.resumo||'')+'</td></tr>'}).join('')+'</tbody></table></div></div>'}
+function pillStatus2(s){var cor=s==='concluido'?'var(--ok)':(s==='bloqueado'||s==='erro'?'#B84C4C':'var(--warn)');return '<span class="pill" style="background:color-mix(in srgb,'+cor+' 18%,white);color:'+cor+'">'+s+'</span>'}
+function seletorLead(onchangeFn,slugAtual){return '<select onchange="'+onchangeFn+'(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:13.5px;font-family:var(--sans);margin-bottom:14px"><option value="">— selecione um cliente —</option>'+fil().filter(function(l){return l.slug}).map(function(l){return '<option value="'+l.slug+'"'+(l.slug===slugAtual?' selected':'')+'>'+l.nome+'</option>'}).join('')+'</select>'}
+function selecionarAuditoria(slug){auditoriaSlug=slug;auditoriaDados=null;render();if(!slug)return;fetch('/api/auditorias/'+encodeURIComponent(slug),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){auditoriaDados=d;if(view==='auditoria')render()}).catch(function(){})}
+function vAuditoria(){
+ var html='<div class="painel"><h2>Auditoria / Diagnóstico (Grupo B)</h2><p style="font-size:13px;color:var(--muted);margin:0 0 10px">Dossiê consolidado de SEO, SEO local, Performance, Core Web Vitals, Acessibilidade, Inteligência Competitiva e Google Business Profile — um por tipo, sempre a versão mais recente.</p>'+seletorLead('selecionarAuditoria',auditoriaSlug);
+ if(!auditoriaSlug)return html+'</div>';
+ if(auditoriaDados===null)return html+'<div class="vazio">Carregando…</div></div>';
+ var tipos=Object.keys(auditoriaDados);
+ if(!tipos.length)return html+'<div class="vazio">Nenhuma auditoria registrada ainda para este cliente.</div></div>';
+ return html+tipos.map(function(t){return '<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)"><b>'+t+'</b> <span style="color:var(--muted);font-size:12px">('+auditoriaDados[t].criado_em+')</span><pre style="white-space:pre-wrap;font-family:var(--sans);font-size:12.5px;background:var(--surface);border-radius:8px;padding:10px;margin-top:6px">'+JSON.stringify(auditoriaDados[t].dados,null,2)+'</pre></div>'}).join('')+'</div>'}
+function selecionarLgpd(slug){lgpdSlug=slug;lgpdDados=null;render();if(!slug)return;fetch('/api/lgpd/'+encodeURIComponent(slug),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){lgpdDados=d;if(view==='lgpd')render()}).catch(function(){})}
+function vLgpd(){
+ var html='<div class="painel"><h2>Conformidade LGPD</h2><p style="font-size:13px;color:var(--muted);margin:0 0 10px">Checklist por campo de dado pessoal antes de qualquer envio externo — gate obrigatório (RF-16).</p>'+seletorLead('selecionarLgpd',lgpdSlug);
+ if(!lgpdSlug)return html+'</div>';
+ if(lgpdDados===null)return html+'<div class="vazio">Carregando…</div></div>';
+ var campos=Object.keys(lgpdDados.checklist||{});
+ if(!campos.length)return html+'<div class="vazio">Nenhuma verificação LGPD registrada ainda para este cliente.</div></div>';
+ var geral=lgpdDados.aprovado?'<span style="color:var(--ok);font-weight:700">✓ aprovado</span>':'<span style="color:var(--warn);font-weight:700">⚠ bloqueado (algum campo pendente/reprovado)</span>';
+ return html+'<div style="margin:10px 0">Status geral: '+geral+'</div><div class="twrap"><table><thead><tr><th>Campo</th><th>Finalidade</th><th>Retenção</th><th>Aprovado</th><th>Verificado em</th></tr></thead><tbody>'+campos.map(function(c){var v=lgpdDados.checklist[c];return '<tr><td>'+c+'</td><td>'+(v.finalidade||'—')+'</td><td>'+(v.retencao||'—')+'</td><td>'+(v.aprovado?'✓':'✕')+'</td><td>'+v.verificado_em+'</td></tr>'}).join('')+'</tbody></table></div></div>'}
 function vComparador(){var ls=fil().filter(function(l){return l.slug&&['redesenhado','publicado','proposta','respondeu','fechado'].indexOf(l.status)>=0});
  if(!ls.length)return '<div class="painel"><div class="vazio">Sem sites redesenhados ainda — rode /redesenhar no Claude e o antes/depois aparece aqui.</div></div>';
  if(!cmpSel||!ls.some(function(l){return l.slug===cmpSel}))cmpSel=ls[0].slug;
@@ -318,7 +347,7 @@ function vComparador(){var ls=fil().filter(function(l){return l.slug&&['redesenh
  +'<div class="cmp-grid"><div class="cmp-col"><div class="cab antes">Antes — site atual'+(antiga?' · <a href="'+antiga+'" target="_blank" style="color:inherit">abrir ↗</a>':'')+'</div>'+(antiga?'<iframe src="'+antiga+'" loading="lazy"></iframe>':'<div class="vazio" style="padding:30px">Sem URL do site antigo registrada.</div>')+'</div>'
  +'<div class="cmp-col"><div class="cab depois">Depois — nova versão · <a href="'+nova+'" target="_blank" style="color:inherit">abrir ↗</a></div><iframe src="'+nova+'"></iframe></div></div>'
  +'<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Alguns sites antigos bloqueiam visualização embutida — se o lado "Antes" ficar em branco, use o link "abrir ↗".</div>'}
-function render(){nav();document.getElementById('view').innerHTML={geral:vGeral,pipeline:vPipeline,clientes:vClientes,sites:vSites,comparador:vComparador,followup:vFollowup,contratos:vContratos,financeiro:vFinanceiro,config:vConfig}[view]()}
+function render(){nav();document.getElementById('view').innerHTML={geral:vGeral,pipeline:vPipeline,clientes:vClientes,sites:vSites,comparador:vComparador,followup:vFollowup,contratos:vContratos,financeiro:vFinanceiro,execucoes:vExecucoes,auditoria:vAuditoria,lgpd:vLgpd,config:vConfig}[view]()}
 var dragSlug=null;
 function dragIni(e,slug){dragSlug=slug;e.target.classList.add('arrastando');e.dataTransfer.effectAllowed='move'}
 function dragFim(e){e.target.classList.remove('arrastando')}

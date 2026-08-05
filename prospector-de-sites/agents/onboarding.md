@@ -100,8 +100,9 @@ concluído.
 ### 6. Dashboard inicial e biblioteca compartilhada
 
 Siga a seção "Setup" da skill `dashboard-leads`: copie
-`dashboard-server.py`, `migrations.py`, `db.py`, `auditlog.py` e
-`iniciar-dashboard.bat` para a raiz da pasta conectada, garanta que o
+`dashboard-server.py`, `migrations.py`, `db.py`, `auditlog.py`,
+`embeddings.py` e `iniciar-dashboard.bat` para a raiz da pasta conectada,
+garanta que o
 banco `prospector.db` existe (a própria `conexao()`/`migrations.aplicar`
 cria e migra o schema na primeira execução) e gere o `dashboard.html` a
 partir do template. Explique ao usuário: duplo clique em

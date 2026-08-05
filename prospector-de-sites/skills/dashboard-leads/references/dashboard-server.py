@@ -6,6 +6,7 @@ Abre em http://localhost:8765 — edições, exclusões e drag&drop salvam no pr
 import json, sqlite3, os, sys, webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import migrations
+import db
 
 PASTA = os.path.dirname(os.path.abspath(__file__))
 os.chdir(PASTA)
@@ -66,6 +67,13 @@ class App(SimpleHTTPRequestHandler):
             c = conexao(); c.row_factory = sqlite3.Row
             rows = [dict(r) for r in c.execute('SELECT * FROM leads').fetchall()]; c.close()
             return self._json(200, rows)
+        if self.path.split('?')[0] == '/api/execucoes':
+            return self._json(200, db.listar_execucoes(DB))
+        partes_get = self.path.split('?')[0].split('/')
+        if len(partes_get) == 4 and partes_get[1] == 'api' and partes_get[2] == 'auditorias':
+            return self._json(200, db.obter_auditorias(DB, partes_get[3]))
+        if len(partes_get) == 4 and partes_get[1] == 'api' and partes_get[2] == 'lgpd':
+            return self._json(200, db.lgpd_status(DB, partes_get[3]))
         if self.path in ('/', ''):
             self.path = '/dashboard.html'
         return SimpleHTTPRequestHandler.do_GET(self)

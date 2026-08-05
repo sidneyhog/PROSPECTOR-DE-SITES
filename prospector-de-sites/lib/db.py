@@ -170,6 +170,30 @@ def registrar_execucao(caminho_db, agente, lead_slug, status, resumo,
     c.close()
 
 
+def listar_execucoes(caminho_db, lead_slug=None, limite=200):
+    """Lista execuções de agente (mais recentes primeiro), opcionalmente
+    filtrando por lead — usado pela aba "Execuções" do dashboard
+    (docs/CRM.md §8, docs/ARQUITETURA_TECNICA.md §8.3)."""
+    c = conectar(caminho_db)
+    c.row_factory = sqlite3.Row
+    sql = 'SELECT * FROM execucoes_agentes'
+    valores = []
+    if lead_slug:
+        sql += ' WHERE lead_slug=?'
+        valores.append(lead_slug)
+    sql += ' ORDER BY id DESC LIMIT ?'
+    valores.append(limite)
+    rows = c.execute(sql, valores).fetchall()
+    c.close()
+    resultado = []
+    for row in rows:
+        item = dict(row)
+        item['criterios_pendentes'] = json.loads(item['criterios_pendentes'] or '[]')
+        item['referencias'] = json.loads(item['referencias'] or '[]')
+        resultado.append(item)
+    return resultado
+
+
 def registrar_auditoria(caminho_db, lead_slug, tipo, dados):
     """Grava um dossiê de diagnóstico do Grupo B (docs/AGENTES.md §5-§12).
     `tipo` é um de: tecnica|seo|seo_local|performance|cwv|acessibilidade|
@@ -490,3 +514,30 @@ def metricas_funil(caminho_db):
         'total_perdidos_sem_resposta': total_perdidos_sem_resposta,
         'total_fechados': total_fechados,
     }
+
+
+def registrar_versao_prompt(caminho_db, agente, versao, hash_prompt, aprovado_em=None, observacoes=None):
+    """Grava uma versão de prompt de agente (agente `governanca-prompts`,
+    docs/AGENTES.md §26). Cada mudança de prompt gera uma nova linha —
+    histórico completo, nunca sobrescreve."""
+    c = conectar(caminho_db)
+    c.execute(
+        'INSERT INTO prompts_versionamento (agente, versao, hash, aprovado_em, observacoes) VALUES (?,?,?,?,?)',
+        (agente, versao, hash_prompt, aprovado_em, observacoes),
+    )
+    c.commit()
+    c.close()
+
+
+def obter_versoes_prompt(caminho_db, agente):
+    """Retorna o histórico de versões de prompt de um agente, mais recente
+    primeiro."""
+    c = conectar(caminho_db)
+    c.row_factory = sqlite3.Row
+    rows = c.execute(
+        'SELECT agente, versao, hash, aprovado_em, observacoes FROM prompts_versionamento '
+        'WHERE agente=? ORDER BY id DESC',
+        (agente,),
+    ).fetchall()
+    c.close()
+    return [dict(r) for r in rows]

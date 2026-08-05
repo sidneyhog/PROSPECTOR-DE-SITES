@@ -274,6 +274,15 @@ do sistema, conforme princípio de reversibilidade (§1.6).
   via `git log` — `ARQUITETURA_TECNICA.md` §11).
 - Revisão de segurança final: credenciais (RNF-03), conformidade LGPD
   ponta a ponta.
+- **Gap encontrado na Fase 8** (registrado aqui para não se perder):
+  `dashboard-server.py`'s `PUT /api/leads/<slug>` (edição manual/drag-and-
+  drop no Kanban) grava direto na tabela `leads`, sem passar pela
+  validação de `lib/db.py::atualizar_estado` nem gravar em `interacoes`.
+  Ou seja, uma edição humana no dashboard hoje contorna a máquina de
+  estados e a trilha de auditoria que os agentes respeitam. Decidir, nesta
+  fase, se isso é um canal de override humano intencional (e então
+  documentá-lo como tal) ou se deve passar a validar/registrar como
+  qualquer outra transição.
 
 ## 13. Sobre testes automatizados (recomendação, não bloqueante)
 

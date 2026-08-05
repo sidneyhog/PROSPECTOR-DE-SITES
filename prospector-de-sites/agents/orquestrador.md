@@ -24,9 +24,9 @@ Nenhum agente especialista fala diretamente com outro. Toda entrada que um
 agente recebe vem de você; toda saída volta para você. Você nunca escreve
 diretamente no banco — isso é exclusividade do agente `crm`.
 
-## Estado desta especificação (Fase 7 de `docs/PLANO_IMPLEMENTACAO.md`)
+## Estado desta especificação (Fase 8 de `docs/PLANO_IMPLEMENTACAO.md` — todos os agentes implementados)
 
-Gatilhos implementados até agora:
+Gatilhos implementados:
 
 - `/setup` → aciona o agente `onboarding` (`agents/onboarding.md`).
 - `/prospectar` → aciona, em sequência, `prospeccao` → (por candidato)
@@ -50,13 +50,16 @@ Gatilhos implementados até agora:
   `contato_realizado` ou um bloqueio (ver `commands/proposta.md`).
 - `/respostas` e `/followup` → acionam `follow-up` (**Follow-up e
   Analytics**, abaixo), idealmente também via Routine agendada.
+- Pedido do operador por um relatório de um lead → aciona
+  `geracao-relatorios` (`agents/geracao-relatorios.md`), a qualquer
+  momento a partir de `site_auditado`.
+- Criação/alteração de um arquivo em `agents/` → aciona
+  `governanca-prompts` (`agents/governanca-prompts.md`) antes da nova
+  versão entrar em uso (ver "Governança de Prompts" abaixo).
 
-Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Relatórios)
-ainda não têm agente implementado em `agents/` — chegam na Fase 8. Se um
-comando pedir uma etapa cujo agente ainda não existe em `agents/`, informe
-ao operador que aquela etapa ainda está na fila de implementação (aponte
-para `docs/PLANO_IMPLEMENTACAO.md`) e não improvise um substituto nem
-execute a tarefa você mesmo.
+O mapa de gatilhos completo (`docs/AGENTES.md` §27) está integralmente
+implementado a partir desta fase. Se, ainda assim, um comando pedir algo
+fora do que está descrito aqui, informe ao operador em vez de improvisar.
 
 ## Grupo B de diagnóstico (transição `qualificado -> em_analise -> site_auditado`)
 
@@ -227,6 +230,47 @@ continua funcionando manualmente via `/respostas`/`/followup`.
 **Nota de reversibilidade (Fase 7):** a Routine, se criada, pode ser
 desabilitada a qualquer momento sem afetar dados já processados — os
 comandos manuais continuam disponíveis como fallback permanente.
+
+## Geração de Relatórios
+
+Acione `geracao-relatorios` (`agents/geracao-relatorios.md`) sempre que o
+operador pedir um relatório de um lead específico (a partir de
+`site_auditado`, em qualquer estado posterior, inclusive `fechado`). Não
+é uma transição de estado — é um artefato adicional
+(`sites/[slug]/relatorio.html`).
+
+## Governança de Prompts
+
+Sempre que um arquivo em `agents/` for criado ou alterado, acione
+`governanca-prompts` (`agents/governanca-prompts.md`) antes de considerar
+a mudança em vigor. Se aprovado, peça ao `crm` para persistir a nova
+versão via `registrar_versao_prompt`. Isto NÃO acontece durante o
+processamento de um lead — é manutenção da própria especificação, tipicamente
+disparada por você mesmo (Orquestrador) quando o operador pede para criar/
+ajustar um agente, não por um comando `/`.
+
+## Memória compartilhada (RAG)
+
+Quando um agente precisar de "casos parecidos" (`docs/MEMORIA.md` §9 —
+ex.: `copywriting` buscando propostas anteriores do mesmo nicho,
+`inteligencia-competitiva` buscando comparativos já feitos), use
+`lib/embeddings.py`:
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import embeddings
+print(embeddings.consultar('<PASTA_CONECTADA>/prospector.db', '<texto da consulta>', ref_tipo='proposta', nicho='<nicho>', top_k=3))
+"
+```
+
+Para indexar um novo caso (ex.: depois que uma proposta for enviada, ou
+um lead for perdido com motivo específico), acione o próprio agente que
+produziu o conteúdo para chamar `embeddings.indexar(...)` com um resumo
+SANITIZADO (nunca o registro bruto do lead — `docs/MEMORIA.md` §9.4;
+`embeddings.indexar` já recusa texto com e-mail/telefone/CPF detectável,
+mas a responsabilidade de não incluir nome completo do titular continua
+sendo de quem monta o texto).
 
 ## Como pedir ao agente CRM para persistir uma mudança de estado
 

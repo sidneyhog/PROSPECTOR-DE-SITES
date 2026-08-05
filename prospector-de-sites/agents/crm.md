@@ -172,6 +172,17 @@ print(db.metricas_funil('<PASTA_CONECTADA>/prospector.db'))
 "
 ```
 
+Para versionamento de prompts (agente `governanca-prompts`):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+db.registrar_versao_prompt('<PASTA_CONECTADA>/prospector.db', '<agente>', versao='1.0.0', hash_prompt='<sha256 do arquivo>', aprovado_em='<timestamp ou None>', observacoes='...')
+print(db.obter_versoes_prompt('<PASTA_CONECTADA>/prospector.db', '<agente>'))
+"
+```
+
 ## Estados válidos e transições (docs/CRM.md §2.1/§2.3)
 
 `encontrado · qualificado · em_analise · site_auditado · pagina_gerada ·
