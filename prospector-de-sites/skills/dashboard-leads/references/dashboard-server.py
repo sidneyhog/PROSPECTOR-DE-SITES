@@ -6,6 +6,7 @@ Abre em http://localhost:8765 — edições, exclusões e drag&drop salvam no pr
 import json, sqlite3, os, sys, webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import migrations
+import db
 
 PASTA = os.path.dirname(os.path.abspath(__file__))
 os.chdir(PASTA)
@@ -58,11 +59,21 @@ class App(SimpleHTTPRequestHandler):
             hg = dict(cfg.get('hostgator', {}))
             hg['senhaDefinida'] = bool(hg.get('senha'))
             hg.pop('senha', None)  # a senha NUNCA sai do arquivo
-            return self._json(200, {'contratante': cfg.get('contratante', {}), 'hostgator': hg})
+            vps = dict(cfg.get('vps', {}))
+            vps['senhaDefinida'] = bool(vps.get('senha'))
+            vps.pop('senha', None)  # a senha NUNCA sai do arquivo
+            return self._json(200, {'contratante': cfg.get('contratante', {}), 'hostgator': hg, 'vps': vps})
         if self.path.split('?')[0] == '/api/leads':
             c = conexao(); c.row_factory = sqlite3.Row
             rows = [dict(r) for r in c.execute('SELECT * FROM leads').fetchall()]; c.close()
             return self._json(200, rows)
+        if self.path.split('?')[0] == '/api/execucoes':
+            return self._json(200, db.listar_execucoes(DB))
+        partes_get = self.path.split('?')[0].split('/')
+        if len(partes_get) == 4 and partes_get[1] == 'api' and partes_get[2] == 'auditorias':
+            return self._json(200, db.obter_auditorias(DB, partes_get[3]))
+        if len(partes_get) == 4 and partes_get[1] == 'api' and partes_get[2] == 'lgpd':
+            return self._json(200, db.lgpd_status(DB, partes_get[3]))
         if self.path in ('/', ''):
             self.path = '/dashboard.html'
         return SimpleHTTPRequestHandler.do_GET(self)
@@ -76,7 +87,7 @@ class App(SimpleHTTPRequestHandler):
     def do_PUT(self):
         if self.path.split('?')[0] == '/api/config':
             cfg = ler_config(); corpo = self._corpo()
-            if 'contratante' in corpo or 'hostgator' in corpo:
+            if 'contratante' in corpo or 'hostgator' in corpo or 'vps' in corpo:
                 if 'contratante' in corpo:
                     ct = cfg.get('contratante', {})
                     ct.update({k: v for k, v in corpo['contratante'].items() if isinstance(v, str)})
@@ -88,6 +99,13 @@ class App(SimpleHTTPRequestHandler):
                         if k == 'senha' and v == '': continue  # em branco = mantém a atual
                         hg[k] = v
                     cfg['hostgator'] = hg
+                if 'vps' in corpo:
+                    vps = cfg.get('vps', {})
+                    for k, v in corpo['vps'].items():
+                        if not isinstance(v, str): continue
+                        if k == 'senha' and v == '': continue  # em branco = mantém a atual
+                        vps[k] = v
+                    cfg['vps'] = vps
             else:  # compatibilidade: corpo plano = contratante
                 ct = cfg.get('contratante', {})
                 ct.update({k: v for k, v in corpo.items() if isinstance(v, str)})

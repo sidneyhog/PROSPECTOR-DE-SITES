@@ -122,6 +122,83 @@ def _m4_estetica_historico(c):
         gerado_em TEXT NOT NULL)''')
 
 
+@_migracao(5)
+def _m5_https_validado(c):
+    """Fase 5 (docs/PLANO_IMPLEMENTACAO.md §8): marca quando o HTTPS de um
+    lead publicado foi validado (RF-11) — condição para a transição
+    `negociacao -> fechado` (docs/CRM.md §3). Não adicionamos `vps_host`/
+    `vps_dominio` por lead (como o esboço inicial de
+    docs/ARQUITETURA_TECNICA.md §4.1 cogitava): a VPS é uma só por
+    instalação (config global `vps.dominio`), não por lead — cada lead só
+    precisa saber QUANDO seu HTTPS foi validado."""
+    _add_coluna_se_faltando(c, 'leads', 'https_validado_em', 'TEXT')
+
+
+@_migracao(6)
+def _m6_propostas_e_lgpd(c):
+    """Fase 6 (docs/PLANO_IMPLEMENTACAO.md §9): separa preço (tabela
+    `propostas`, agente `precificacao-proposta`) de redação (agente
+    `copywriting`, Fase 4), e introduz o gate de conformidade LGPD
+    obrigatório antes de qualquer envio externo (RF-16). Ver
+    docs/ARQUITETURA_TECNICA.md §4.2. `leads.valor_setup` é um espelho
+    denormalizado do valor da proposta mais recente, para leitura rápida
+    no dashboard (mesmo padrão já usado por `manutencao`)."""
+    _add_coluna_se_faltando(c, 'leads', 'valor_setup', 'REAL')
+    c.execute('''CREATE TABLE IF NOT EXISTS propostas(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lead_slug TEXT NOT NULL REFERENCES leads(slug),
+        valor_setup REAL,
+        valor_manutencao REAL,
+        justificativa TEXT,
+        criado_em TEXT NOT NULL,
+        enviado_em TEXT,
+        respondido_em TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS lgpd_checklist(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lead_slug TEXT NOT NULL REFERENCES leads(slug),
+        campo TEXT NOT NULL,
+        finalidade TEXT,
+        retencao TEXT,
+        aprovado INTEGER NOT NULL DEFAULT 0,
+        verificado_em TEXT NOT NULL)''')
+
+
+@_migracao(7)
+def _m7_followups(c):
+    """Fase 7 (docs/PLANO_IMPLEMENTACAO.md §10): tentativas de follow-up
+    por lead (RF-13), para não depender de o operador rodar /respostas e
+    /followup manualmente todo dia. Ver docs/ARQUITETURA_TECNICA.md §4.2."""
+    c.execute('''CREATE TABLE IF NOT EXISTS followups(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lead_slug TEXT NOT NULL REFERENCES leads(slug),
+        tentativa_numero INTEGER NOT NULL,
+        enviado_em TEXT NOT NULL,
+        respondido INTEGER NOT NULL DEFAULT 0)''')
+
+
+@_migracao(8)
+def _m8_prompts_versionamento_e_embeddings(c):
+    """Fase 8 (docs/PLANO_IMPLEMENTACAO.md §11): versionamento de prompts
+    (agente `governanca-prompts`) e memória compartilhada via embeddings/
+    RAG (docs/MEMORIA.md §9). Ver docs/ARQUITETURA_TECNICA.md §4.2."""
+    c.execute('''CREATE TABLE IF NOT EXISTS prompts_versionamento(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        agente TEXT NOT NULL,
+        versao TEXT NOT NULL,
+        hash TEXT NOT NULL,
+        aprovado_em TEXT,
+        observacoes TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS embeddings(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ref_tipo TEXT NOT NULL,
+        ref_id TEXT NOT NULL,
+        nicho TEXT,
+        texto_fonte TEXT NOT NULL,
+        vetor_json TEXT NOT NULL,
+        modelo TEXT NOT NULL,
+        criado_em TEXT NOT NULL)''')
+
+
 def versao_atual(c):
     c.execute("CREATE TABLE IF NOT EXISTS schema_version (versao INTEGER NOT NULL)")
     row = c.execute("SELECT versao FROM schema_version").fetchone()

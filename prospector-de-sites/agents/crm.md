@@ -112,6 +112,77 @@ print(db.listar_estetica_recente('<PASTA_CONECTADA>/prospector.db', limite=5))
 "
 ```
 
+Para atualizar campos do lead SEM transição de estado (ex.: agente
+`deploy` registrando `urlNova`/`https_validado_em` num lead que continua
+`pagina_revisada` — a transição para `fechado` acontece depois, por
+assinatura de contrato):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+print(db.atualizar_campos('<PASTA_CONECTADA>/prospector.db', '<slug>', {'urlNova': 'https://...', 'https_validado_em': '2026-01-01 12:00:00'}, agente='deploy'))
+"
+```
+
+Para registrar uma proposta comercial (agente `precificacao-proposta`) e
+marcá-la como enviada:
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+pid = db.registrar_proposta('<PASTA_CONECTADA>/prospector.db', '<slug>', valor_setup=1500.0, valor_manutencao=97.0, justificativa='...')
+print(db.marcar_proposta_enviada('<PASTA_CONECTADA>/prospector.db', '<slug>'))
+"
+```
+
+Para registrar o veredito de conformidade LGPD de cada campo de dado
+pessoal e consultar o status consolidado (gate obrigatório antes de
+qualquer envio externo — RF-16):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+db.registrar_lgpd_checklist('<PASTA_CONECTADA>/prospector.db', '<slug>', campo='email', finalidade='contato comercial B2B', retencao='ate o fim do relacionamento comercial ou solicitacao de exclusao', aprovado=True)
+print(db.lgpd_status('<PASTA_CONECTADA>/prospector.db', '<slug>'))
+"
+```
+
+Para follow-up e detecção de resposta (agente `follow-up`):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+print(db.listar_leads_para_followup('<PASTA_CONECTADA>/prospector.db', dias_sem_resposta=3, limite_tentativas=1))
+db.registrar_followup('<PASTA_CONECTADA>/prospector.db', '<slug>', tentativa_numero=1)
+db.registrar_resposta('<PASTA_CONECTADA>/prospector.db', '<slug>')  # quando detectar resposta no Gmail
+"
+```
+
+Para métricas de funil consolidadas (agente `analytics`):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+print(db.metricas_funil('<PASTA_CONECTADA>/prospector.db'))
+"
+```
+
+Para versionamento de prompts (agente `governanca-prompts`):
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import db
+db.registrar_versao_prompt('<PASTA_CONECTADA>/prospector.db', '<agente>', versao='1.0.0', hash_prompt='<sha256 do arquivo>', aprovado_em='<timestamp ou None>', observacoes='...')
+print(db.obter_versoes_prompt('<PASTA_CONECTADA>/prospector.db', '<agente>'))
+"
+```
+
 ## Estados válidos e transições (docs/CRM.md §2.1/§2.3)
 
 `encontrado · qualificado · em_analise · site_auditado · pagina_gerada ·

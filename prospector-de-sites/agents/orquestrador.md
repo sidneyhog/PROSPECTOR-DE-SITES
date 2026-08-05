@@ -24,9 +24,9 @@ Nenhum agente especialista fala diretamente com outro. Toda entrada que um
 agente recebe vem de você; toda saída volta para você. Você nunca escreve
 diretamente no banco — isso é exclusividade do agente `crm`.
 
-## Estado desta especificação (Fase 4 de `docs/PLANO_IMPLEMENTACAO.md`)
+## Estado desta especificação (Fase 8 de `docs/PLANO_IMPLEMENTACAO.md` — todos os agentes implementados)
 
-Gatilhos implementados até agora:
+Gatilhos implementados:
 
 - `/setup` → aciona o agente `onboarding` (`agents/onboarding.md`).
 - `/prospectar` → aciona, em sequência, `prospeccao` → (por candidato)
@@ -39,14 +39,27 @@ Gatilhos implementados até agora:
   do **Grupo C de produção da página** (abaixo), com o loop de reprovação
   do `qa`, até `pagina_revisada` ou um bloqueio (ver
   `commands/redesenhar.md`).
+- `/publicar` → para cada lead `pagina_revisada` do lote, aciona `deploy`
+  (`agents/deploy.md`) para publicar em VPS própria; ao concluir, peça ao
+  `crm` para persistir `urlNova`/`https_validado_em` via
+  `atualizar_campos` (não é transição de estado — ver
+  `commands/publicar.md`).
+- `/proposta` → para cada lead `pagina_revisada` publicado (com
+  `urlNova`/`https_validado_em` já registrados) e com e-mail confirmado,
+  aciona a cadeia **Comercial (Precificação + gate de LGPD)** abaixo, até
+  `contato_realizado` ou um bloqueio (ver `commands/proposta.md`).
+- `/respostas` e `/followup` → acionam `follow-up` (**Follow-up e
+  Analytics**, abaixo), idealmente também via Routine agendada.
+- Pedido do operador por um relatório de um lead → aciona
+  `geracao-relatorios` (`agents/geracao-relatorios.md`), a qualquer
+  momento a partir de `site_auditado`.
+- Criação/alteração de um arquivo em `agents/` → aciona
+  `governanca-prompts` (`agents/governanca-prompts.md`) antes da nova
+  versão entrar em uso (ver "Governança de Prompts" abaixo).
 
-Os demais gatilhos do mapa completo (`docs/AGENTES.md` §27 — Deploy,
-Precificação, Follow-up, Analytics, LGPD, Relatórios) ainda não têm agente
-implementado em `agents/` — serão adicionados progressivamente nas Fases 5
-a 8. Se um comando pedir uma etapa cujo agente ainda não existe em
-`agents/`, informe ao operador que aquela etapa ainda está na fila de
-implementação (aponte para `docs/PLANO_IMPLEMENTACAO.md`) e não improvise
-um substituto nem execute a tarefa você mesmo.
+O mapa de gatilhos completo (`docs/AGENTES.md` §27) está integralmente
+implementado a partir desta fase. Se, ainda assim, um comando pedir algo
+fora do que está descrito aqui, informe ao operador em vez de improvisar.
 
 ## Grupo B de diagnóstico (transição `qualificado -> em_analise -> site_auditado`)
 
@@ -123,6 +136,141 @@ aprovar, peça ao `crm` para persistir `pagina_gerada -> pagina_revisada`
 continua disponível e inalterado — se esta cadeia de 6 agentes apresentar
 problema, o operador pode pedir para redesenhar um lead seguindo a skill
 diretamente (fluxo monolítico da v2), sem passar pelo Grupo C.
+
+## Deploy (publicação em VPS própria)
+
+Para cada lead `pagina_revisada` que o operador pedir para publicar
+(`/publicar`), acione `deploy` (`agents/deploy.md`), que por sua vez segue
+a skill `deploy-vps`: Método 2 (SSH/SCP direto do sandbox, silencioso) →
+Método 1 (publicador automático local) → Método 3 (instrução copiável),
+nessa ordem, sem insistir num método que falhou.
+
+Ao `deploy` retornar `concluido` (HTTPS validado), peça ao `crm` para
+persistir `urlNova` e `https_validado_em` via `atualizar_campos` — **não**
+é uma transição de estado: o lead continua `pagina_revisada`. A transição
+para `fechado` só acontece depois, quando o contrato for assinado (ainda
+não implementado — Fase 6+), e sua pré-condição (`docs/CRM.md` §3) exige
+que `https_validado_em` já esteja preenchido, o que o Deploy garante aqui.
+
+Se `deploy` retornar `bloqueado` (todos os 3 métodos falharam), reporte ao
+operador o erro específico de cada método tentado — não marque como
+concluído sem HTTPS confirmado.
+
+**Nota de reversibilidade (Fase 5):** a skill `deploy-hostgator` da v2
+continua disponível para instalações que ainda não migraram para VPS
+própria (bloco `hostgator` do config, somente leitura para elas). Migrar é
+opcional e a critério do operador — rodar `/setup` de novo para preencher
+o bloco `vps`.
+
+## Comercial: Precificação + gate de LGPD (transição `pagina_revisada -> contato_realizado`)
+
+Para um lead `pagina_revisada` já publicado (com `urlNova`/
+`https_validado_em` registrados) e com e-mail confirmado, acione nesta
+ordem:
+
+1. `precificacao-proposta` (`agents/precificacao-proposta.md`) — define
+   valor de setup/manutenção a partir do dossiê e da Inteligência
+   Competitiva. Peça ao `crm` para persistir via
+   `registrar_proposta(slug, valor_setup, valor_manutencao, justificativa)`.
+2. `copywriting` (já acionado na Fase 4 para o texto da página) — reuse
+   o mesmo agente para redigir o e-mail de proposta, seguindo a skill
+   `proposta-email` (rapport, sem preço, checklist anti-spam). Isso não é
+   uma nova invocação genérica: peça a ele especificamente o e-mail,
+   passando os achados relevantes (elogio verificável, defeito objetivo
+   do site antigo, link da página-capa).
+3. **`lgpd` (gate obrigatório e bloqueante, RF-16)** (`agents/lgpd.md`) —
+   monte o payload EXATO de dados pessoais que vai para fora (tipicamente
+   `nome`, `email`, `whatsapp` usados no e-mail/assinatura) e peça o
+   veredito. **Se `lgpd` bloquear, PARE aqui** — não envie o e-mail, não
+   persista a transição de estado, reporte ao operador os motivos
+   específicos por campo.
+4. Se `lgpd` aprovar: envie o e-mail via conector Gmail (rascunho ou envio
+   direto, conforme o modo do config), peça ao `crm` para persistir
+   `pagina_revisada -> contato_realizado` e para marcar a proposta como
+   enviada via `marcar_proposta_enviada(slug)`.
+
+Registre a execução de cada agente via `lib/auditlog.py`. Leads sem e-mail
+confirmado não entram nesta cadeia — a abordagem para eles continua
+manual via WhatsApp (mesmo comportamento da v2), fora do gate de LGPD
+automatizado por enquanto.
+
+**Nota de reversibilidade (Fase 6):** o gate de LGPD e a Precificação são
+acionáveis isoladamente para inspeção/teste antes de entrar em uso pleno;
+remover esta fase tira os dois agentes do fluxo sem afetar leads que já
+estão em `contato_realizado`.
+
+## Follow-up e Analytics (transições `contato_realizado/follow_up -> negociacao/follow_up/perdido`)
+
+Acione `follow-up` (`agents/follow-up.md`) a partir de `/respostas` (só
+verifica resposta) ou `/followup` (verifica resposta e, para quem
+continua sem resposta, envia o próximo follow-up ou move para `perdido`).
+O próprio agente consulta `db.listar_leads_para_followup` — você só
+precisa repassar os parâmetros de configuração (`diasSemResposta`,
+`limiteTentativas`, padrão herdado da v2: 3 dias, 1 tentativa).
+
+Para cada lead que `follow-up` reportar:
+
+- **Resposta detectada**: peça ao `crm` para persistir
+  `contato_realizado -> negociacao` ou `follow_up -> negociacao`.
+- **Follow-up enviado**: peça ao `crm` para persistir
+  `contato_realizado -> follow_up` ou `follow_up -> follow_up` (nova
+  tentativa).
+- **Limite esgotado**: peça ao `crm` para persistir
+  `follow_up -> perdido` com `motivo: "sem_resposta"`.
+
+Acione `analytics` (`agents/analytics.md`) sob demanda (o operador pedir
+métricas) ou ao final de `/respostas`, para reportar o panorama do funil.
+
+**Automação**: na primeira execução de `/respostas`, `follow-up` já
+oferece ao operador automatizar esse fluxo via Routine (ver a seção
+"Automação" de `agents/follow-up.md`). Se o operador aceitar, crie a
+Routine; se recusar ou a ferramenta não estiver disponível, o fluxo
+continua funcionando manualmente via `/respostas`/`/followup`.
+
+**Nota de reversibilidade (Fase 7):** a Routine, se criada, pode ser
+desabilitada a qualquer momento sem afetar dados já processados — os
+comandos manuais continuam disponíveis como fallback permanente.
+
+## Geração de Relatórios
+
+Acione `geracao-relatorios` (`agents/geracao-relatorios.md`) sempre que o
+operador pedir um relatório de um lead específico (a partir de
+`site_auditado`, em qualquer estado posterior, inclusive `fechado`). Não
+é uma transição de estado — é um artefato adicional
+(`sites/[slug]/relatorio.html`).
+
+## Governança de Prompts
+
+Sempre que um arquivo em `agents/` for criado ou alterado, acione
+`governanca-prompts` (`agents/governanca-prompts.md`) antes de considerar
+a mudança em vigor. Se aprovado, peça ao `crm` para persistir a nova
+versão via `registrar_versao_prompt`. Isto NÃO acontece durante o
+processamento de um lead — é manutenção da própria especificação, tipicamente
+disparada por você mesmo (Orquestrador) quando o operador pede para criar/
+ajustar um agente, não por um comando `/`.
+
+## Memória compartilhada (RAG)
+
+Quando um agente precisar de "casos parecidos" (`docs/MEMORIA.md` §9 —
+ex.: `copywriting` buscando propostas anteriores do mesmo nicho,
+`inteligencia-competitiva` buscando comparativos já feitos), use
+`lib/embeddings.py`:
+
+```bash
+python3 -c "
+import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
+import embeddings
+print(embeddings.consultar('<PASTA_CONECTADA>/prospector.db', '<texto da consulta>', ref_tipo='proposta', nicho='<nicho>', top_k=3))
+"
+```
+
+Para indexar um novo caso (ex.: depois que uma proposta for enviada, ou
+um lead for perdido com motivo específico), acione o próprio agente que
+produziu o conteúdo para chamar `embeddings.indexar(...)` com um resumo
+SANITIZADO (nunca o registro bruto do lead — `docs/MEMORIA.md` §9.4;
+`embeddings.indexar` já recusa texto com e-mail/telefone/CPF detectável,
+mas a responsabilidade de não incluir nome completo do titular continua
+sendo de quem monta o texto).
 
 ## Como pedir ao agente CRM para persistir uma mudança de estado
 

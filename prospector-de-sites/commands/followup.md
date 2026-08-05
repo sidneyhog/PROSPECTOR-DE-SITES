@@ -1,21 +1,30 @@
 ---
-description: Gera follow-up para propostas sem resposta há 3+ dias (1 por lead, nunca repete)
+description: Verifica respostas e envia o próximo follow-up (dentro do limite configurado) para propostas paradas
 argument-hint: "[nome do cliente] — opcional, padrão: todos os elegíveis"
 ---
 
-Gere follow-ups educados para propostas paradas, seguindo a skill `proposta-email`.
+Acione o Orquestrador (`agents/orquestrador.md`) para processar este
+comando, seguindo a seção "Follow-up e Analytics" de
+`agents/orquestrador.md`.
 
 ## Passos
 
-1. **Verifique respostas ANTES**: rode a lógica do `/respostas` (busca no Gmail via conector) para não fazer follow-up de quem já respondeu — quem respondeu vira status `respondeu` e sai da lista.
-2. Selecione os elegíveis: leads com status `proposta`, data de envio há **3+ dias**, e SEM follow-up registrado (procure "follow-up" no campo `obs` do banco/`leads.md`). Se `$ARGUMENTS` indicar um cliente, restrinja a ele (mas respeite a regra de nunca repetir follow-up).
-3. Para cada elegível, escreva o follow-up — máximo 4 linhas, tom de quem lembra com gentileza, nunca cobra:
-   - Referência leve ao primeiro e-mail ("te escrevi semana passada sobre o site").
-   - Pergunta única: "conseguiu ver a página que preparei?" + o mesmo link da capa (único link).
-   - Sem preço, sem urgência, sem "última chance". Passar pela checklist anti-spam da skill.
-4. Crie os rascunhos no Gmail (mesmo modo do config). **1 follow-up por lead, para sempre** — se não responder ao follow-up, o lead é marcado como frio manualmente pelo usuário no dashboard.
-5. Registre em cada lead: `obs` += "Follow-up enviado em [data]" (no banco via API do dashboard se estiver rodando, senão direto no SQLite/`leads.md`).
+1. Acionar `follow-up` (`agents/follow-up.md`) por completo: verificar
+   respostas primeiro (quem respondeu sai da lista de elegíveis e vai
+   para `negociacao`), depois `db.listar_leads_para_followup` para achar
+   quem está parado há `diasSemResposta` (config, padrão 3) e ainda não
+   atingiu `limiteTentativas` (config, padrão 1 — mesmo comportamento da
+   v2 de não repetir indefinidamente).
+2. Para cada elegível: `follow-up` escreve o texto (máximo 4 linhas, tom
+   gentil, sem preço, checklist anti-spam da skill `proposta-email`),
+   cria o rascunho/envia via Gmail, e o `crm` persiste
+   `contato_realizado -> follow_up` ou `follow_up -> follow_up`.
+3. Para quem já atingiu o limite sem resposta: `crm` persiste
+   `follow_up -> perdido` com `motivo: "sem_resposta"`.
 
 ## Saída
 
-Liste: follow-ups criados, leads que responderam nesse meio-tempo (celebre!), e leads sem resposta que já receberam follow-up (sugerir marcar como frio ou tentar WhatsApp). Ofereça agendar `/respostas` + `/followup` como verificação diária automática.
+Liste: follow-ups criados, leads que responderam nesse meio-tempo
+(celebre!), e leads movidos para `perdido` por esgotar o limite. Ofereça
+automatizar via Routine agendada (ver `agents/follow-up.md`, seção
+"Automação") se ainda não tiver sido configurada.

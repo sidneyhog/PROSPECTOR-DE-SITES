@@ -1,21 +1,44 @@
 ---
-description: Escreve e envia (ou cria rascunho) da proposta por e-mail via Gmail
+description: Define o valor, escreve e envia (ou cria rascunho de) a proposta por e-mail, com gate de conformidade LGPD obrigatório
 argument-hint: "[nome do cliente ou todos]"
 ---
 
-Envie propostas para os leads com página publicada, seguindo a skill `proposta-email`.
+Acione o Orquestrador (`agents/orquestrador.md`) para processar este
+comando, seguindo a seção "Comercial: Precificação + gate de LGPD" de
+`agents/orquestrador.md`.
 
 ## Passos
 
-1. Leia `prospector-config.json` (assinatura e modo de envio) e `leads.md`.
-2. Determine os destinatários: `$ARGUMENTS`, ou todos os leads com status `publicado` que ainda não receberam proposta. Somente leads com e-mail confirmado — para os demais, informe que a abordagem fica manual via WhatsApp (ofereça o texto adaptado).
-3. Para cada cliente, escreva o e-mail seguindo a skill `proposta-email` na íntegra, usando os dados reais do lead: elogio baseado nas avaliações do Google, o defeito específico apontado na prospecção e — como ÚNICO link — a página-capa publicada (`https://[dominio]/[pastaBase]/[slug]/proposta.html`). Se a capa não foi publicada, gere e publique-a agora (template na skill `proposta-email`, upload pela skill `deploy-hostgator`) antes de criar o rascunho. NUNCA mencione preço.
-4. **Checklist anti-spam (bloqueante)**: valide o e-mail contra a checklist da skill `proposta-email` (1 link, sem palavras-gatilho, sem anexo, assunto-pergunta ≤ 60 caracteres, primeira linha personalizada). Reescreva até passar em todos os itens.
-5. Envio conforme o modo do config:
-   - **rascunho** (padrão): crie o rascunho pelo conector do Gmail e informe que está pronto para revisão na caixa de rascunhos.
-   - **enviar direto**: se o conector do Gmail não oferecer envio direto, use o Claude in Chrome no Gmail web para enviar, ou crie o rascunho e avise o usuário.
-6. Atualize `leads.md` e o banco do dashboard: status `proposta` + data de envio.
+1. Ler `prospector-config.json` (assinatura e modo de envio).
+2. Determinar os destinatários: `$ARGUMENTS`, ou todos os leads
+   `pagina_revisada` já publicados (`urlNova`/`https_validado_em`
+   preenchidos) que ainda não receberam proposta. Somente leads com
+   e-mail confirmado — para os demais, informar que a abordagem fica
+   manual via WhatsApp (oferecer o texto adaptado), sem passar pelo gate
+   de LGPD automatizado nesta fase.
+3. Para cada lead, na ordem: `precificacao-proposta` (define e registra
+   valor internamente — nunca aparece no e-mail) → `copywriting` (redige
+   o e-mail seguindo a skill `proposta-email` na íntegra: elogio
+   específico, defeito objetivo, ÚNICO link a página-capa
+   `.../proposta.html`, zero preço) → **checklist anti-spam da skill
+   `proposta-email` (bloqueante)**, reescrever até passar em todos os
+   itens → **`lgpd` (gate obrigatório e bloqueante)**.
+4. **Se `lgpd` bloquear**: não envie nada para aquele lead. Reporte ao
+   operador o motivo específico por campo e siga para o próximo lead do
+   lote — um bloqueio não interrompe o lote inteiro.
+5. **Se `lgpd` aprovar**: envio conforme o modo do config:
+   - **rascunho** (padrão): crie o rascunho pelo conector do Gmail.
+   - **enviar direto**: se o conector não oferecer envio direto, use o
+     Claude in Chrome no Gmail web, ou crie o rascunho e avise o usuário.
+   Depois do envio, peça ao `crm` para persistir
+   `pagina_revisada -> contato_realizado` e para marcar a proposta como
+   enviada (`marcar_proposta_enviada`).
 
 ## Saída
 
-Resuma: quantas propostas criadas/enviadas e para quem, com o link da capa de cada uma. Lembre o usuário: `/respostas` verifica quem respondeu (dá pra agendar diário) e `/followup` cuida de quem está 3+ dias sem responder.
+Resuma, por lead: valor definido (interno, não citado no e-mail), veredito
+do gate de LGPD (aprovado/bloqueado com motivo), e status do envio
+(rascunho criado / enviado / bloqueado). Lembre o usuário: `/respostas`
+verifica quem respondeu (dá pra agendar diário) e `/followup` cuida de
+quem está 3+ dias sem responder (ambos ainda no fluxo pré-v3 — agentes
+`follow-up`/`analytics` chegam na Fase 7).
