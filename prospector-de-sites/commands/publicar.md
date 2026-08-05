@@ -3,9 +3,9 @@ description: Publica as páginas revisadas em VPS própria (SSH/nginx/Let's Encr
 argument-hint: "[nome do cliente ou todos]"
 ---
 
-Acione o Orquestrador (`agents/orquestrador.md`) para processar este
+Acione o Orquestrador (`agents/atlas.md`) para processar este
 comando, seguindo a seção "Deploy (publicação em VPS própria)" de
-`agents/orquestrador.md`.
+`agents/atlas.md`.
 
 ## Passos
 
@@ -13,20 +13,20 @@ comando, seguindo a seção "Deploy (publicação em VPS própria)" de
    (nem `chaveSshPath` nem `senha`), oriente a rodar `/setup` primeiro —
    não prossiga sem credenciais de VPS.
 2. Determinar o que publicar: `$ARGUMENTS` (um cliente ou "todos"), ou
-   listar os leads com status `pagina_revisada` (via `crm`) e perguntar.
+   listar os leads com status `pagina_revisada` (via `carmem`) e perguntar.
 3. **Gerar a página-capa de cada cliente**: preencher
    `references/capa-proposta-template.html` (skill `proposta-email`) com
    os dados do lead + assinatura do config e salvar como
    `sites/[slug]/proposta.html` (comportamento inalterado desta v2 — a
    decomposição de Precificação/Copywriting-proposta é da Fase 6).
-4. **Publicar via o agente `deploy`**, para cada cliente: página
+4. **Publicar via o agente `diego`**, para cada cliente: página
    (`[slug].html`), editor (`[slug]-editor.html`) e capa
    (`proposta.html`).
-5. **Verificação HTTPS (bloqueante)**: o próprio `deploy` só reporta
+5. **Verificação HTTPS (bloqueante)**: o próprio `diego` só reporta
    sucesso com HTTPS validado (`ssh_deploy.verificar_https`) — se ele
    retornar bloqueado, não considere publicado; reporte o erro específico
    ao operador.
-6. Registrar via `crm` → `atualizar_campos`: `urlNova` (URL pública da
+6. Registrar via `carmem` → `atualizar_campos`: `urlNova` (URL pública da
    página) e `https_validado_em`, para cada cliente publicado com
    sucesso. O lead permanece `pagina_revisada` (a transição para
    `fechado` acontece só quando o contrato for assinado).

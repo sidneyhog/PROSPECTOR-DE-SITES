@@ -56,24 +56,27 @@ stateDiagram-v2
 
 ### 2.3 Tabela de transições (pré-condições, agente responsável, efeito colateral)
 
+Nomes próprios dos agentes entre parênteses — glossário completo em
+`docs/AGENTES.md`.
+
 | De | Para | Pré-condição obrigatória | Agente que valida/aciona | Efeito colateral gravado |
 |---|---|---|---|---|
-| — | `encontrado` | Candidato coletado pela Prospecção, sem duplicata no CRM | Prospecção → CRM | Nova linha em `leads`; `interacoes` (de=NULL) |
-| `encontrado` | `qualificado` | Veredito de qualificação = aprovado | Qualificação de Leads → CRM | `interacoes` com motivo |
-| `encontrado` | `perdido` | Veredito de qualificação = reprovado | Qualificação de Leads → CRM | `interacoes` com motivo (`motivo_perda = "nao_qualificado"`) |
-| `qualificado` | `em_analise` | Nenhuma auditoria pendente já em execução para o mesmo lead (evita duplicidade) | Orquestrador → CRM | `execucoes_agentes` para cada agente do Grupo B disparado |
-| `em_analise` | `site_auditado` | Todos os agentes do Grupo B retornaram `status != erro` (ao menos um `precisa_input_humano` bloqueia a transição) | CRM (checagem agregada) | `auditorias` (uma linha por tipo) |
-| `site_auditado` | `pagina_gerada` | Dossiê (`auditorias`) existente e recente (janela de cache — `ARQUITETURA_TECNICA.md` §6) | Front-end (última etapa do Grupo C) → CRM | Arquivos `pagina.html`, `pagina-editor.html`, `comparar.html` gravados |
-| `pagina_gerada` | `pagina_revisada` | Veredito de QA = aprovado | QA → CRM | `interacoes` |
-| `pagina_gerada` | `pagina_gerada` (loop) | Veredito de QA = reprovado | QA → CRM | `interacoes` com lista de motivos; Orquestrador reaciona agente responsável |
-| `pagina_revisada` | `contato_realizado` | LGPD = aprovado (gate obrigatório, RF-16) **e** `propostas.valor_setor` definido pela Precificação | LGPD (gate) + Precificação + Copywriting → CRM | `propostas` (nova linha, `enviado_em`); e-mail enviado via conector Gmail |
-| `pagina_revisada` | `pagina_revisada` (bloqueio) | LGPD = bloqueado | LGPD → CRM | Nenhuma transição; `lgpd_checklist.aprovado = 0` registrado, operador notificado |
-| `contato_realizado` | `negociacao` | Resposta detectada (Follow-up/Gmail) | Follow-up → CRM | `propostas.respondido_em` |
-| `contato_realizado` | `follow_up` | N dias sem resposta (configurável, default herdado da v2) | Follow-up → CRM | `followups` (nova tentativa) |
-| `follow_up` | `negociacao` | Resposta detectada | Follow-up → CRM | `followups.respondido = 1` |
-| `follow_up` | `perdido` | Nº de tentativas ≥ limite configurado | Follow-up → CRM | `motivo_perda = "sem_resposta"` |
-| `negociacao` | `fechado` | Contrato assinado (`contratoStatus = assinado`) **e** Deploy confirmou HTTPS válido | Deploy + CRM | `https_validado_em`, `contratoEm` |
-| `negociacao` | `perdido` | Recusa explícita do cliente final | Follow-up/operador → CRM | `motivo_perda` (catálogo §6) |
+| — | `encontrado` | Candidato coletado pela Prospecção, sem duplicata no CRM | Prospecção (Íris) → CRM (Carmem) | Nova linha em `leads`; `interacoes` (de=NULL) |
+| `encontrado` | `qualificado` | Veredito de qualificação = aprovado | Qualificação de Leads (Justo) → Carmem | `interacoes` com motivo |
+| `encontrado` | `perdido` | Veredito de qualificação = reprovado | Justo → Carmem | `interacoes` com motivo (`motivo_perda = "nao_qualificado"`) |
+| `qualificado` | `em_analise` | Nenhuma auditoria pendente já em execução para o mesmo lead (evita duplicidade) | Orquestrador (Atlas) → Carmem | `execucoes_agentes` para cada agente do Grupo B disparado |
+| `em_analise` | `site_auditado` | Todos os agentes do Grupo B retornaram `status != erro` (ao menos um `precisa_input_humano` bloqueia a transição) | Carmem (checagem agregada) | `auditorias` (uma linha por tipo) |
+| `site_auditado` | `pagina_gerada` | Dossiê (`auditorias`) existente e recente (janela de cache — `ARQUITETURA_TECNICA.md` §6) | Front-end (Fê, última etapa do Grupo C) → Carmem | Arquivos `pagina.html`, `pagina-editor.html`, `comparar.html` gravados |
+| `pagina_gerada` | `pagina_revisada` | Veredito de QA = aprovado | QA (Quel) → Carmem | `interacoes` |
+| `pagina_gerada` | `pagina_gerada` (loop) | Veredito de QA = reprovado | Quel → Carmem | `interacoes` com lista de motivos; Orquestrador reaciona agente responsável |
+| `pagina_revisada` | `contato_realizado` | LGPD = aprovado (gate obrigatório, RF-16) **e** `propostas.valor_setor` definido pela Precificação | LGPD (Lia, gate) + Precificação (Valentina) + Copywriting (Clarice) → Carmem | `propostas` (nova linha, `enviado_em`); e-mail enviado via conector Gmail |
+| `pagina_revisada` | `pagina_revisada` (bloqueio) | LGPD = bloqueado | Lia → Carmem | Nenhuma transição; `lgpd_checklist.aprovado = 0` registrado, operador notificado |
+| `contato_realizado` | `negociacao` | Resposta detectada (Follow-up/Gmail) | Follow-up (Fabi) → Carmem | `propostas.respondido_em` |
+| `contato_realizado` | `follow_up` | N dias sem resposta (configurável, default herdado da v2) | Fabi → Carmem | `followups` (nova tentativa) |
+| `follow_up` | `negociacao` | Resposta detectada | Fabi → Carmem | `followups.respondido = 1` |
+| `follow_up` | `perdido` | Nº de tentativas ≥ limite configurado | Fabi → Carmem | `motivo_perda = "sem_resposta"` |
+| `negociacao` | `fechado` | Contrato assinado (`contratoStatus = assinado`) **e** Deploy confirmou HTTPS válido | Deploy (Diego) + Carmem | `https_validado_em`, `contratoEm` |
+| `negociacao` | `perdido` | Recusa explícita do cliente final | Fabi/operador → Carmem | `motivo_perda` (catálogo §6) |
 | `negociacao` | `follow_up` | Negociação sem movimento por N dias | Follow-up → CRM | Nova tentativa de reaquecimento |
 | `perdido` | `qualificado` | Decisão manual do operador (reabertura) | Orquestrador (comando explícito do operador) → CRM | `interacoes` com `motivo = "reaberto_manualmente"` |
 
@@ -165,7 +168,14 @@ Padronizado para permitir análise agregada (alimenta Analytics/Relatórios):
    lead perdido automaticamente — só o operador, via comando explícito ao
    Orquestrador (evita reprocessamento indevido de leads descartados).
 6. **Toda transição gera uma linha em `interacoes`.** Sem exceção — é o que
-   sustenta a auditabilidade exigida em RNF-04/RNF-10.
+   sustenta a auditabilidade exigida em RNF-04/RNF-10. Isso vale também
+   para edição manual do operador no dashboard (drag-and-drop/
+   formulário): é um canal de override intencional (o operador pode mover
+   um card para qualquer coluna, sem a validação de
+   `TRANSICOES_VALIDAS` que os agentes seguem), mas continua gerando o
+   registro em `interacoes` (agente `"operador (dashboard)"`) — decisão
+   tomada na Fase 9 (`docs/PLANO_IMPLEMENTACAO.md` §12), resolvendo um gap
+   encontrado na Fase 8.
 
 ## 8. Visões do dashboard (evolução das já existentes na v2)
 

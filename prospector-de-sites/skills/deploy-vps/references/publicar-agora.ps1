@@ -19,6 +19,10 @@ if (-not $h -or -not $u -or -not $remotoBase) { Log "ERRO: preencha a conexao VP
 if (-not $chave -and -not $senha) { Log "ERRO: informe uma chave SSH (chaveSshPath) ou senha na conexao VPS." "Red"; Fim 1 }
 if (-not (Get-Command pscp.exe -ErrorAction SilentlyContinue)) { Log "ERRO: pscp.exe nao encontrado nesta pasta/PATH." "Red"; Fim 1 }
 
+# AVISO DE SEGURANCA: pscp/plink nao tem equivalente ao $env:SSHPASS do sshpass -
+# com -pw, a senha fica brevemente visivel na lista de processos do Windows
+# (Gerenciador de Tarefas/Get-Process) durante a publicacao. Nao ha alternativa
+# com essas ferramentas; use chaveSshPath sempre que possivel (ver SKILL.md).
 function Args-Auth {
   if ($chave) { return @("-i", $chave) } else { return @("-pw", $senha) }
 }

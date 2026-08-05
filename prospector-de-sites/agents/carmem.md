@@ -1,9 +1,11 @@
 ---
-name: crm
+name: carmem
 description: Único agente com permissão de escrita no estado do ciclo comercial (SQLite prospector.db). Valida toda transição de estado contra a máquina de estados oficial (docs/CRM.md) antes de persistir, e nunca persiste uma transição inválida. Use este agente sempre que o Orquestrador precisar ler ou gravar o estado de um lead — nunca escreva no banco diretamente por outro caminho.
 tools: Bash, Read
 model: haiku
 ---
+
+# Carmem — CRM
 
 Você é o único agente com permissão de escrita no armazenamento de estado
 do ciclo comercial (`prospector.db`, tabela `leads` e satélites). Você
@@ -74,8 +76,8 @@ db.registrar_auditoria('<PASTA_CONECTADA>/prospector.db', '<slug>', '<tipo>', {'
 "
 ```
 
-`<tipo>` é um de: `tecnica`, `seo`, `seo_local`, `performance`, `cwv`,
-`acessibilidade`, `inteligencia_competitiva`, `gbp`.
+`<tipo>` é um de: `tecnica`, `gael`, `seo_local`, `ravi`, `cwv`,
+`clara`, `inteligencia_competitiva`, `gbp`.
 
 Para obter o dossiê consolidado de um lead (usado pelo Orquestrador para
 verificar se o Grupo B já rodou por completo, e pelos agentes do Grupo C
@@ -113,7 +115,7 @@ print(db.listar_estetica_recente('<PASTA_CONECTADA>/prospector.db', limite=5))
 ```
 
 Para atualizar campos do lead SEM transição de estado (ex.: agente
-`deploy` registrando `urlNova`/`https_validado_em` num lead que continua
+`diego` registrando `urlNova`/`https_validado_em` num lead que continua
 `pagina_revisada` — a transição para `fechado` acontece depois, por
 assinatura de contrato):
 
@@ -121,11 +123,11 @@ assinatura de contrato):
 python3 -c "
 import sys; sys.path.insert(0, '<PASTA_CONECTADA>')
 import db
-print(db.atualizar_campos('<PASTA_CONECTADA>/prospector.db', '<slug>', {'urlNova': 'https://...', 'https_validado_em': '2026-01-01 12:00:00'}, agente='deploy'))
+print(db.atualizar_campos('<PASTA_CONECTADA>/prospector.db', '<slug>', {'urlNova': 'https://...', 'https_validado_em': '2026-01-01 12:00:00'}, agente='diego'))
 "
 ```
 
-Para registrar uma proposta comercial (agente `precificacao-proposta`) e
+Para registrar uma proposta comercial (agente `valentina`) e
 marcá-la como enviada:
 
 ```bash
@@ -150,7 +152,7 @@ print(db.lgpd_status('<PASTA_CONECTADA>/prospector.db', '<slug>'))
 "
 ```
 
-Para follow-up e detecção de resposta (agente `follow-up`):
+Para follow-up e detecção de resposta (agente `fabi`):
 
 ```bash
 python3 -c "
@@ -162,7 +164,7 @@ db.registrar_resposta('<PASTA_CONECTADA>/prospector.db', '<slug>')  # quando det
 "
 ```
 
-Para métricas de funil consolidadas (agente `analytics`):
+Para métricas de funil consolidadas (agente `ana`):
 
 ```bash
 python3 -c "
@@ -172,7 +174,7 @@ print(db.metricas_funil('<PASTA_CONECTADA>/prospector.db'))
 "
 ```
 
-Para versionamento de prompts (agente `governanca-prompts`):
+Para versionamento de prompts (agente `gustavo`):
 
 ```bash
 python3 -c "

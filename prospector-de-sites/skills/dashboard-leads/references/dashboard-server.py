@@ -118,9 +118,17 @@ class App(SimpleHTTPRequestHandler):
             sets = [k for k in ch if k in CAMPOS and k != 'slug']
             if sets:
                 c = conexao()
+                status_anterior = None
+                if 'status' in sets:
+                    row = c.execute('SELECT status FROM leads WHERE slug=?', (slug,)).fetchone()
+                    status_anterior = row[0] if row else None
                 c.execute('UPDATE leads SET %s, atualizado=datetime("now","localtime") WHERE slug=?' %
                           ','.join('%s=?' % k for k in sets), [ch[k] for k in sets] + [slug])
                 c.commit(); c.close()
+                # Edição manual (drag-and-drop/formulário) não passa pela validação de
+                # atualizar_estado, mas continua deixando rastro de auditoria (docs/PLANO_IMPLEMENTACAO.md §12).
+                if 'status' in sets and status_anterior != ch['status']:
+                    db.registrar_interacao_manual(DB, slug, status_anterior, ch['status'], motivo='edicao manual no dashboard')
             return self._json(200, {'ok': True})
         return self._json(404, {'erro': 'rota'})
     def do_DELETE(self):

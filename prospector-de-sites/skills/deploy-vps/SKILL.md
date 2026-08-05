@@ -24,6 +24,18 @@ ou comando mostrado ao usuário**, mesma regra já aplicada ao HostGator na
 v2. Prefira sempre `chaveSshPath` quando o usuário tiver uma chave gerada;
 oriente a gerar uma (`ssh-keygen`) se ele só tiver senha e quiser migrar.
 
+**Risco conhecido e documentado (autenticação por senha no Windows):** no
+publicador do Mac/Linux e em `lib/ssh_deploy.py`, a senha é passada ao
+`ssh`/`scp` via variável de ambiente (`SSHPASS`, lida pelo `sshpass`),
+nunca como argumento de linha de comando. No Windows, porém, `pscp.exe`/
+`plink.exe` (PuTTY) só aceitam senha via a flag `-pw`, que fica
+brevemente visível na lista de processos do sistema (Gerenciador de
+Tarefas, `Get-Process`) durante a publicação — não há equivalente ao
+`sshpass` para essas ferramentas. Isso é uma limitação real das
+ferramentas escolhidas, não um descuido: **por isso a recomendação de usar
+chave SSH é mais forte ainda no Windows** — com `chaveSshPath` preenchido,
+nem `pscp`/`plink` nem o script tocam na senha.
+
 ## Configuração única do domínio (nginx + Let's Encrypt) — feita uma vez no /setup
 
 Antes do primeiro deploy, o domínio precisa estar apontando para a VPS
@@ -52,7 +64,7 @@ do config. O usuário instala UMA vez e o `/publicar` vira 100% automático.
    - **Windows**: `publicar-agora.ps1`, `publicar-agora.bat`,
      `publicador-oculto.vbs`, `instalar-publicador.bat` — usa
      `pscp.exe`/`plink.exe` (PuTTY, baixados uma vez no `/setup`, ver
-     `commands/setup.md` item 7A / `agents/onboarding.md`).
+     `commands/setup.md` item 7A / `agents/bia.md`).
    - **Mac**: `publicar-agora.command` e `instalar-publicador.command` —
      usa `scp`/`ssh` nativos (chave) ou `sshpass` (senha, `brew install
      sshpass`).
@@ -111,7 +123,7 @@ peça a senha no chat).
    realmente aponta pra VPS (DNS) e se o certbot renovou automaticamente
    (`certbot renew --dry-run` no servidor). Link `http://` NUNCA vai para
    cliente.
-3. Registre `urlNova` e `https_validado_em` no lead via o agente `crm`
+3. Registre `urlNova` e `https_validado_em` no lead via o agente `carmem`
    (`atualizar_campos`, não é uma transição de estado —
    `docs/CRM.md` §3).
 

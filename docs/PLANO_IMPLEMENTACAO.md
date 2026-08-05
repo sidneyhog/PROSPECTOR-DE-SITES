@@ -8,7 +8,9 @@ especificado nas Etapas 1–6 em fases pequenas, testáveis e reversíveis.
 cada fase abaixo só começa mediante aprovação explícita, fase a fase, como
 já ocorreu com cada etapa de documentação.
 
-Status: **aguardando aprovação**.
+Status: **aprovado — Fases 0 a 8 implementadas; Fase 9 em andamento**
+(ver `docs/AGENTES.md` para o glossário de nomes próprios dos agentes,
+adotado na Fase 9).
 
 ---
 
@@ -76,7 +78,7 @@ negócio.
 - `lib/db.py` (funções `obter_lead`, `atualizar_estado`,
   `registrar_execucao`, `registrar_auditoria` — `ARQUITETURA_TECNICA.md` §8.3).
 - Tabelas novas: `interacoes`, `execucoes_agentes` (aditivas).
-- `agents/orquestrador.md`, `agents/crm.md`, `agents/onboarding.md`
+- `agents/atlas.md`, `agents/carmem.md`, `agents/bia.md`
   (`PROMPTS.md` §1, §2, §21).
 - `commands/setup.md` passa a acionar o Orquestrador → Onboarding, em vez
   de instrução direta ao operador.
@@ -97,7 +99,7 @@ delas; reverter remove o mecanismo sem afetar `leads` existente.
 `prospeccao-maps`.
 
 **Entregas.**
-- `agents/prospeccao.md`, `agents/qualificacao-leads.md`
+- `agents/iris.md`, `agents/justo.md`
   (`PROMPTS.md` §3, §4).
 - `commands/prospectar.md` atualizado: aciona Orquestrador → Prospecção →
   Qualificação de Leads → CRM (grava `encontrado`/`qualificado`/`perdido`
@@ -123,10 +125,10 @@ inexistentes no produto (PRD §2.2).
 
 **Entregas.**
 - Tabelas `auditorias`, `gbp_snapshots` (aditivas).
-- `agents/auditoria-tecnica.md`, `agents/seo.md`, `agents/seo-local.md`,
-  `agents/performance.md`, `agents/core-web-vitals.md`,
-  `agents/acessibilidade.md`, `agents/inteligencia-competitiva.md`,
-  `agents/google-business-profile.md` (`PROMPTS.md` §5–§12).
+- `agents/vitor.md`, `agents/gael.md`, `agents/nando.md`,
+  `agents/ravi.md`, `agents/vitalina.md`,
+  `agents/clara.md`, `agents/sofia.md`,
+  `agents/gabi.md` (`PROMPTS.md` §5–§12).
 - Orquestrador passa a acionar todo o Grupo B na transição
   `qualificado → em_analise → site_auditado` (`AGENTES.md` §27).
 
@@ -147,8 +149,8 @@ UX/UI, Branding, Copywriting, CRO, Front-end e QA.
 
 **Entregas.**
 - Tabela `estetica_historico` (aditiva).
-- `agents/ux-ui.md`, `agents/branding.md`, `agents/copywriting.md`,
-  `agents/cro.md`, `agents/front-end.md`, `agents/qa.md`
+- `agents/nina.md`, `agents/bruna.md`, `agents/clarice.md`,
+  `agents/cris.md`, `agents/fe.md`, `agents/quel.md`
   (`PROMPTS.md` §13–§18).
 - `commands/redesenhar.md` atualizado para acionar a cadeia do Grupo C via
   Orquestrador, com o loop de reprovação do QA (`CRM.md` §2.2).
@@ -172,7 +174,7 @@ no PRD §2.2/§17.1.
 
 **Entregas.**
 - `skills/deploy-vps/` (novo) + `lib/ssh_deploy.py`.
-- `agents/deploy.md` (`PROMPTS.md` §20).
+- `agents/diego.md` (`PROMPTS.md` §20).
 - `commands/publicar.md` atualizado para acionar Deploy via Orquestrador.
 - `prospector-config.json`: novo bloco `vps{host, usuario, chave_ssh_path,
   dominio_padrao}`; bloco `hostgator{}` legado mantido **somente leitura**
@@ -197,7 +199,7 @@ qualquer envio externo (RF-16).
 
 **Entregas.**
 - Tabelas `propostas`, `lgpd_checklist` (aditivas).
-- `agents/precificacao-proposta.md`, `agents/lgpd.md`
+- `agents/valentina.md`, `agents/lia.md`
   (`PROMPTS.md` §19, §24).
 - `commands/proposta.md` atualizado: Orquestrador aciona Precificação →
   Copywriting (reaproveitando texto da Fase 4) → **LGPD (gate obrigatório,
@@ -219,7 +221,7 @@ manualmente todo dia (RF-13).
 
 **Entregas.**
 - Tabela `followups` (aditiva).
-- `agents/follow-up.md`, `agents/analytics.md` (`PROMPTS.md` §22, §23).
+- `agents/fabi.md`, `agents/ana.md` (`PROMPTS.md` §22, §23).
 - Uma Routine/trigger do Claude Code configurada para verificar respostas
   e disparar follow-ups agendados (substitui o polling manual da v2).
 
@@ -240,7 +242,7 @@ novas abas do dashboard.
 
 **Entregas.**
 - Tabelas `prompts_versionamento`, `embeddings` (aditivas).
-- `agents/geracao-relatorios.md`, `agents/governanca-prompts.md`
+- `agents/renata.md`, `agents/gustavo.md`
   (`PROMPTS.md` §25, §26).
 - `lib/embeddings.py` (indexação/consulta por similaridade —
   `MEMORIA.md` §9).

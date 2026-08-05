@@ -8,7 +8,7 @@ Linux/Mac; no Windows, ver `pscp.exe`/`plink.exe` na skill `deploy-vps`).
 Ver docs/PLANO_IMPLEMENTACAO.md §8 (Fase 5) e docs/ARQUITETURA_TECNICA.md
 §8.2 (integração SSH).
 
-Usado pelo agente `deploy` (Método 2 — "tentar publicar direto do
+Usado pelo agente `diego` (Método 2 — "tentar publicar direto do
 sandbox", análogo ao Método 2 de FTP silencioso de `deploy-hostgator`).
 Se `ssh`/`scp` não estiverem disponíveis, ou a rede do sandbox bloquear,
 o agente cai para o Método 1 (publicador automático local) ou o Método 3
@@ -21,7 +21,7 @@ variável de ambiente `SSHPASS` (nunca via argumento de linha de comando,
 que ficaria visível na lista de processos do sistema).
 
 NOTA DE MANUTENÇÃO: sem cópia em skills/dashboard-leads/references/ — este
-módulo é usado pelo agente `deploy`/skill `deploy-vps`, não pelo
+módulo é usado pelo agente `diego`/skill `deploy-vps`, não pelo
 dashboard-server.py. Ver skills/deploy-vps/references/ssh_deploy.py.
 """
 import shutil

@@ -9,6 +9,10 @@ produzir este documento.
 
 Status: **aguardando aprovação**.
 
+**Nota de nomenclatura (Fase 9):** cada agente citado aqui pela função
+técnica também tem um nome próprio humanizado (ex.: Orquestrador = Atlas,
+CRM = Carmem) — glossário completo em `docs/AGENTES.md`.
+
 ---
 
 ## 1. Princípios que restringem toda decisão técnica abaixo

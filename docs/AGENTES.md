@@ -7,6 +7,42 @@ alterado para produzir este documento — é especificação, não implementaç�
 
 Status: **aguardando aprovação**.
 
+**Nota de nomenclatura (Fase 9 de `docs/PLANO_IMPLEMENTACAO.md`):** todos os
+26 agentes têm, além da função técnica, um nome próprio humanizado — mais
+fácil de lembrar e referenciar em conversa do que o identificador técnico.
+O nome aparece sempre ao lado da função (ex.: "Atlas — Orquestrador"), e o
+identificador técnico (`name:` no frontmatter, nome do arquivo em
+`agents/`) é a versão em minúsculas sem acento do nome. Glossário completo:
+
+| Nome | Função | Arquivo |
+|---|---|---|
+| Atlas | Orquestrador | `agents/atlas.md` |
+| Bia | Onboarding/Configuração | `agents/bia.md` |
+| Íris | Prospecção | `agents/iris.md` |
+| Justo | Qualificação de Leads | `agents/justo.md` |
+| Vitor | Auditoria Técnica de Sites | `agents/vitor.md` |
+| Gael | SEO | `agents/gael.md` |
+| Nando | SEO Local | `agents/nando.md` |
+| Ravi | Performance | `agents/ravi.md` |
+| Vitalina | Core Web Vitals | `agents/vitalina.md` |
+| Clara | Acessibilidade | `agents/clara.md` |
+| Sofia | Inteligência Competitiva | `agents/sofia.md` |
+| Gabi | Google Business Profile | `agents/gabi.md` |
+| Nina | UX/UI | `agents/nina.md` |
+| Bruna | Branding | `agents/bruna.md` |
+| Clarice | Copywriting | `agents/clarice.md` |
+| Cris | CRO | `agents/cris.md` |
+| Fê | Front-end | `agents/fe.md` |
+| Quel | QA | `agents/quel.md` |
+| Valentina | Precificação/Proposta Comercial | `agents/valentina.md` |
+| Diego | Deploy | `agents/diego.md` |
+| Carmem | CRM | `agents/carmem.md` |
+| Fabi | Follow-up | `agents/fabi.md` |
+| Ana | Analytics | `agents/ana.md` |
+| Lia | LGPD | `agents/lia.md` |
+| Renata | Geração de Relatórios | `agents/renata.md` |
+| Gustavo | Governança de Prompts/Qualidade | `agents/gustavo.md` |
+
 ---
 
 ## 0. Regras arquiteturais válidas para todos os agentes
@@ -54,7 +90,7 @@ Critérios de qualidade · Critérios de encerramento.**
 
 ---
 
-## 1. Orquestrador
+## 1. Atlas — Orquestrador
 
 **Objetivo.** Ser o único ponto de decisão sobre *quais* agentes acionar,
 *em que ordem*, e o único ponto que fala tanto com o operador humano quanto
@@ -114,7 +150,7 @@ e o motivo, quando algum agente retornou `bloqueado`/`erro`/
 
 ## Grupo A — Aquisição de Leads
 
-### 2. Onboarding/Configuração
+### 2. Bia — Onboarding/Configuração
 
 **Objetivo.** Capturar e manter os parâmetros globais que todos os outros
 agentes consomem (substitui o `/setup` atual).
@@ -144,7 +180,7 @@ downstream (ex.: Deploy sem VPS configurada).
 **Critérios de encerramento.** Configuração completa e validada, ou lista
 explícita de pendências reportada ao operador.
 
-### 3. Prospecção
+### 3. Íris — Prospecção
 
 **Objetivo.** Encontrar candidatos a lead em um nicho/cidade a partir de
 fontes públicas (hoje: Google Maps via Claude in Chrome).
@@ -176,7 +212,7 @@ inclui negócios sem meio de contato público.
 **Critérios de encerramento.** Lista de candidatos entregue (mesmo que
 vazia, com o motivo — ex.: "nenhum resultado abaixo do critério de nota").
 
-### 4. Qualificação de Leads
+### 4. Justo — Qualificação de Leads
 
 **Objetivo.** Decidir, para cada candidato trazido pela Prospecção, se ele
 entra oficialmente no funil como lead `Qualificado`.
@@ -213,7 +249,7 @@ recebidos.
 
 ## Grupo B — Diagnóstico
 
-### 5. Auditoria Técnica de Sites
+### 5. Vitor — Auditoria Técnica de Sites
 
 **Objetivo.** Produzir o dossiê técnico estruturado do site atual do lead
 qualificado, consumido pelos demais agentes de diagnóstico (SEO, Performance,
@@ -242,7 +278,7 @@ site pelos agentes seguintes (RF-06).
 **Critérios de encerramento.** Dossiê completo entregue, ou `bloqueado` com
 motivo (ex.: site fora do ar).
 
-### 6. SEO
+### 6. Gael — SEO
 
 **Objetivo.** Avaliar SEO on-page/técnico geral do site atual e recomendar
 melhorias a aplicar no redesign.
@@ -270,7 +306,7 @@ priorizadas por impacto.
 **Critérios de encerramento.** Recomendações entregues ou `bloqueado` se o
 dossiê de entrada estiver incompleto.
 
-### 7. SEO Local
+### 7. Nando — SEO Local
 
 **Objetivo.** Avaliar sinais de SEO local — NAP consistency (Nome/Endereço/
 Telefone), presença/qualidade do Google Business Profile, schema
@@ -296,7 +332,7 @@ fonte divergente (site vs. GBP vs. diretórios).
 **Critérios de encerramento.** Achados entregues, ou `precisa_input_humano`
 se o GBP do lead não existir/não puder ser localizado.
 
-### 8. Performance
+### 8. Ravi — Performance
 
 **Objetivo.** Avaliar velocidade e eficiência técnica do site atual (peso de
 página, nº de requisições, uso de cache/compressão).
@@ -322,7 +358,7 @@ apenas "está lento").
 **Critérios de encerramento.** Achados entregues ou `bloqueado` (site
 inacessível).
 
-### 9. Core Web Vitals
+### 9. Vitalina — Core Web Vitals
 
 **Objetivo.** Avaliar LCP, INP/FID e CLS do site atual conforme critérios do
 Google.
@@ -348,7 +384,7 @@ do Google (não critério subjetivo do agente).
 **Critérios de encerramento.** Classificação completa das 3 métricas
 entregue.
 
-### 10. Acessibilidade
+### 10. Clara — Acessibilidade
 
 **Objetivo.** Avaliar conformidade do site atual com critérios básicos de
 acessibilidade (contraste, alt text, navegação por teclado, semântica HTML).
@@ -372,7 +408,7 @@ reconhecível (ex.: contraste insuficiente, ausência de `alt`).
 
 **Critérios de encerramento.** Checklist completo entregue.
 
-### 11. Inteligência Competitiva
+### 11. Sofia — Inteligência Competitiva
 
 **Objetivo.** Comparar o lead com concorrentes diretos do mesmo nicho/cidade.
 
@@ -401,7 +437,7 @@ suposição.
 concorrente identificado, ou `precisa_input_humano` se nenhum concorrente
 for encontrado.
 
-### 12. Google Business Profile
+### 12. Gabi — Google Business Profile
 
 **Objetivo.** Monitorar e reportar o estado do GBP do lead/cliente
 (avaliações, posição, completude do perfil), antes e depois do redesign.
@@ -434,7 +470,7 @@ perfil não for localizável.
 
 ## Grupo C — Produção da Página
 
-### 13. UX/UI
+### 13. Nina — UX/UI
 
 **Objetivo.** Definir a estrutura de experiência/interface da nova página
 (hierarquia de informação, fluxo de navegação, wireframe conceitual).
@@ -464,7 +500,7 @@ e CWV (ex.: não propõe carrossel pesado se CWV já apontou LCP ruim).
 **Critérios de encerramento.** Estrutura entregue e consumível por Branding/
 Copywriting/Front-end sem ambiguidade.
 
-### 14. Branding
+### 14. Bruna — Branding
 
 **Objetivo.** Definir identidade visual da nova página (paleta, tipografia,
 tom visual), preservando ativos reais do cliente (logo, fotos) quando
@@ -497,7 +533,7 @@ preserva ativos reais do cliente sem invenção.
 **Critérios de encerramento.** Especificação visual entregue e distinta das
 últimas N estéticas usadas.
 
-### 15. Copywriting
+### 15. Clarice — Copywriting
 
 **Objetivo.** Redigir todo o texto voltado ao cliente final: página, e-mail
 de proposta, follow-up, contrato (partes textuais).
@@ -527,7 +563,7 @@ gatilhos que soem spam (checklist já usado na v2 para e-mails).
 **Critérios de encerramento.** Todos os textos necessários entregues e
 prontos para avaliação de CRO.
 
-### 16. CRO
+### 16. Cris — CRO
 
 **Objetivo.** Otimizar a copy e a estrutura para conversão (CTAs, prova
 social, redução de fricção), sem reescrever do zero o trabalho de
@@ -556,7 +592,7 @@ genéricas ("melhorar CTA" não basta — deve dizer qual CTA e por quê).
 **Critérios de encerramento.** Lista de ajustes entregue (mesmo que vazia,
 se nada precisar mudar).
 
-### 17. Front-end
+### 17. Fê — Front-end
 
 **Objetivo.** Implementar a página final (HTML/CSS/JS autocontido,
 responsivo), incorporando estrutura (UX/UI), identidade (Branding) e texto
@@ -588,7 +624,7 @@ achados de Acessibilidade/CWV já levantados no Grupo B.
 **Critérios de encerramento.** Página gerada e pronta para QA (transição
 `PaginaGerada` no CRM).
 
-### 18. QA
+### 18. Quel — QA
 
 **Objetivo.** Ser o único agente com autoridade para aprovar a transição
 `PaginaGerada → PaginaRevisada` (RF-10).
@@ -626,7 +662,7 @@ assim).
 
 ## Grupo D — Comercial e Publicação
 
-### 19. Precificação/Proposta Comercial
+### 19. Valentina — Precificação/Proposta Comercial
 
 **Objetivo.** Decidir valor e condições comerciais (setup + manutenção)
 com base no dossiê de auditoria e no comparativo competitivo — separado de
@@ -657,7 +693,7 @@ instalação.
 **Critérios de encerramento.** Valor definido e entregue ao Orquestrador
 para composição da proposta.
 
-### 20. Deploy
+### 20. Diego — Deploy
 
 **Objetivo.** Publicar a página aprovada em VPS própria via SSH/nginx/Let's
 Encrypt (substituindo definitivamente o fluxo HostGator/cPanel da v2).
@@ -688,7 +724,7 @@ sucesso; nenhuma duplicação de virtual host em republicações do mesmo lead.
 `bloqueado` com o erro específico (ex.: falha de conexão SSH, DNS não
 apontado).
 
-### 21. CRM
+### 21. Carmem — CRM
 
 **Objetivo.** Ser o único agente com permissão de escrita no armazenamento
 de estado do ciclo comercial (SQLite `leads` evoluído), a pedido do
@@ -720,7 +756,7 @@ negócio (ver `MEMORIA.md`, Etapa 5).
 **Critérios de encerramento.** Transição persistida com sucesso, ou
 rejeitada com motivo (transição inválida para o estado atual).
 
-### 22. Follow-up
+### 22. Fabi — Follow-up
 
 **Objetivo.** Gerenciar o acompanhamento pós-proposta sem depender de o
 operador rodar comandos manualmente todo dia (RF-13).
@@ -758,7 +794,7 @@ movido para `Perdido` com o motivo (limite esgotado).
 
 ## Grupo E — Governança e Relacionamento com o Cliente Final
 
-### 23. Analytics
+### 23. Ana — Analytics
 
 **Objetivo.** Registrar eventos de funil (proposta enviada/aberta/
 respondida) para alimentar métricas de sucesso do PRD (§15).
@@ -787,7 +823,7 @@ consolidação.
 **Critérios de encerramento.** Métricas solicitadas entregues e
 consistentes com o histórico do CRM.
 
-### 24. LGPD
+### 24. Lia — LGPD
 
 **Objetivo.** Ser o guardião de conformidade: validar, antes de qualquer
 envio externo (proposta, contrato, follow-up), que os dados pessoais
@@ -817,7 +853,7 @@ acionável (qual dado, qual problema).
 **Critérios de encerramento.** Veredito de aprovação/bloqueio emitido antes
 de qualquer envio externo ser autorizado pelo Orquestrador.
 
-### 25. Geração de Relatórios
+### 25. Renata — Geração de Relatórios
 
 **Objetivo.** Consolidar saídas de Performance, CWV, SEO, Acessibilidade e
 Analytics em um relatório apresentável ao cliente final (RF-18).
@@ -844,7 +880,7 @@ extrapolar além do que os agentes de diagnóstico encontraram).
 
 **Critérios de encerramento.** Relatório gerado e entregue.
 
-### 26. Governança de Prompts/Qualidade
+### 26. Gustavo — Governança de Prompts/Qualidade
 
 **Objetivo.** Ser o dono da consistência dos prompts de sistema/
 operacionais dos demais 25 agentes (Etapa 6), evitando que cada agente

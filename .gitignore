@@ -1,2 +1,13 @@
 __pycache__/
 *.pyc
+
+# Dados de runtime que nunca devem existir no repo do plugin (só na pasta
+# conectada do usuário) - defesa extra caso algum script seja rodado direto
+# daqui durante desenvolvimento/teste (revisão de segurança, Fase 9).
+prospector.db
+prospector-config.json
+dashboard.html
+logs/
+fila-publicacao.txt
+fila-publicada-*.txt
+publicador-log.txt

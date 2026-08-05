@@ -10,6 +10,11 @@ produzir este documento.
 
 Status: **aguardando aprovação**.
 
+**Nota de nomenclatura (Fase 9 de `docs/PLANO_IMPLEMENTACAO.md`):** cada
+agente tem um nome próprio humanizado além da função técnica (ex.: "Atlas
+— Orquestrador"). Glossário completo em `docs/AGENTES.md`, logo após o
+status.
+
 ---
 
 ## 0. Fundamentos comuns (para evitar repetição e garantir consistência — papel do agente de Governança de Prompts, `AGENTES.md` §26)
@@ -69,7 +74,7 @@ Salvo exceção indicada na ficha do agente:
 
 ---
 
-## 1. Orquestrador
+## 1. Atlas — Orquestrador
 
 **Prompt de sistema (adicional ao papel, que aqui não segue o preâmbulo de
 agente especialista — o Orquestrador é a sessão principal):**
@@ -110,7 +115,7 @@ de uso do PRD §7 ponta a ponta em teste manual (Etapa 7).
 
 ## Grupo A — Aquisição de Leads
 
-### 2. Onboarding/Configuração
+### 2. Bia — Onboarding/Configuração
 
 **Prompt de sistema (adicional):** "Você coleta e valida a configuração
 global da instalação: nicho(s)-alvo, cidade(s), identidade do operador,
@@ -138,7 +143,7 @@ conectividade bem-sucedido.
 **Critérios de aprovação:** configuração completa e validada, ou lista
 explícita de pendências.
 
-### 3. Prospecção
+### 3. Íris — Prospecção
 
 **Prompt de sistema (adicional):** "Você busca candidatos a lead em
 Google Maps para um nicho/cidade, usando os critérios de filtro
@@ -165,7 +170,7 @@ tem meio de contato público.
 
 **Critérios de aprovação:** lista entregue (mesmo vazia, com motivo).
 
-### 4. Qualificação de Leads
+### 4. Justo — Qualificação de Leads
 
 **Prompt de sistema (adicional):** "Você julga se um candidato deve entrar
 oficialmente no funil, aplicando o checklist vigente (layout datado,
@@ -198,7 +203,7 @@ recebidos.
 
 ## Grupo B — Diagnóstico
 
-### 5. Auditoria Técnica de Sites
+### 5. Vitor — Auditoria Técnica de Sites
 
 **Prompt de sistema (adicional):** "Você levanta e estrutura fatos técnicos
 do site atual (estrutura HTML, stack aparente, meta tags, sitemap,
@@ -225,7 +230,7 @@ pelos agentes do Grupo B (RF-06).
 **Critérios de aprovação:** dossiê completo, ou `bloqueado` com motivo
 (ex.: site fora do ar).
 
-### 6. SEO
+### 6. Gael — SEO
 
 **Prompt de sistema (adicional):** "Você avalia SEO on-page/técnico geral
 com base no dossiê já coletado (headings, meta tags, sitemap, robots,
@@ -251,7 +256,7 @@ impacto, não genéricas.
 **Critérios de aprovação:** `bloqueado` se o dossiê de entrada estiver
 incompleto; caso contrário, recomendações entregues.
 
-### 7. SEO Local
+### 7. Nando — SEO Local
 
 **Prompt de sistema (adicional):** "Você avalia consistência de NAP
 (Nome/Endereço/Telefone) entre o site e o Google Business Profile, e a
@@ -279,7 +284,7 @@ geral.
 **Critérios de aprovação:** `precisa_input_humano` se o GBP não for
 localizável; caso contrário, achados entregues.
 
-### 8. Performance
+### 8. Ravi — Performance
 
 **Prompt de sistema (adicional):** "Você avalia peso de página, número de
 requisições e uso de cache/compressão do site atual, quantificando
@@ -303,7 +308,7 @@ qualitativos.
 **Critérios de aprovação:** `bloqueado` se site inacessível; caso
 contrário, achados entregues.
 
-### 9. Core Web Vitals
+### 9. Vitalina — Core Web Vitals
 
 **Prompt de sistema (adicional):** "Você avalia LCP, INP/FID e CLS do site
 atual e classifica cada métrica conforme os thresholds oficiais do
@@ -328,7 +333,7 @@ não a critério subjetivo.
 **Critérios de aprovação:** classificação completa das 3 métricas
 entregue.
 
-### 10. Acessibilidade
+### 10. Clara — Acessibilidade
 
 **Prompt de sistema (adicional):** "Você aplica um checklist de
 acessibilidade (contraste, alt text, navegação por teclado, semântica
@@ -353,7 +358,7 @@ reconhecível.
 
 **Critérios de aprovação:** checklist completo entregue.
 
-### 11. Inteligência Competitiva
+### 11. Sofia — Inteligência Competitiva
 
 **Prompt de sistema (adicional):** "Você identifica 2-3 concorrentes
 diretos do mesmo nicho/cidade e compara presença online (site,
@@ -380,7 +385,7 @@ suposição.
 **Critérios de aprovação:** `precisa_input_humano` se nenhum concorrente
 for encontrado; caso contrário, comparativo com ao menos 1 concorrente.
 
-### 12. Google Business Profile
+### 12. Gabi — Google Business Profile
 
 **Prompt de sistema (adicional):** "Você captura um snapshot do GBP do
 lead/cliente (nota, nº avaliações, completude do perfil) com timestamp,
@@ -411,7 +416,7 @@ contrário, snapshot capturado.
 
 ## Grupo C — Produção da Página
 
-### 13. UX/UI
+### 13. Nina — UX/UI
 
 **Prompt de sistema (adicional):** "Você define a estrutura de experiência
 da nova página (hierarquia de informação, fluxo, posição de CTAs) com base
@@ -438,7 +443,7 @@ acessibilidade/CWV (ex.: não propõe elemento pesado se LCP já é ruim).
 **Critérios de aprovação:** estrutura consumível sem ambiguidade por
 Branding/Copywriting/Front-end.
 
-### 14. Branding
+### 14. Bruna — Branding
 
 **Prompt de sistema (adicional):** "Você define paleta, tipografia e tom
 visual da nova página, preservando ativos reais do cliente (logo, fotos).
@@ -467,7 +472,7 @@ cliente recente; preserva ativos reais sem invenção.
 **Critérios de aprovação:** especificação visual entregue e distinta das
 últimas N estéticas.
 
-### 15. Copywriting
+### 15. Clarice — Copywriting
 
 **Prompt de sistema (adicional):** "Você redige todo texto voltado ao
 cliente final (página, e-mail de proposta, follow-up, partes textuais do
@@ -496,7 +501,7 @@ checklist anti-spam aplicado a e-mails.
 **Critérios de aprovação:** todos os textos necessários entregues,
 prontos para CRO.
 
-### 16. CRO
+### 16. Cris — CRO
 
 **Prompt de sistema (adicional):** "Você revisa (não reescreve do zero) a
 copy e a estrutura entregues, sugerindo ajustes pontuais e específicos de
@@ -522,7 +527,7 @@ nunca genéricas.
 **Critérios de aprovação:** lista entregue (mesmo vazia, se nada precisar
 mudar).
 
-### 17. Front-end
+### 17. Fê — Front-end
 
 **Prompt de sistema (adicional):** "Você implementa a página final
 (HTML/CSS/JS autocontido, responsivo, sem dependências externas pesadas),
@@ -551,7 +556,7 @@ Prompts revisa o prompt em si.
 **Critérios de aprovação:** página gerada e pronta para QA (transição
 `pagina_gerada`, `CRM.md` §2.3).
 
-### 18. QA
+### 18. Quel — QA
 
 **Prompt de sistema (adicional):** "Você é a única autoridade para aprovar
 a transição `pagina_gerada → pagina_revisada`. Você valida a página contra
@@ -582,7 +587,7 @@ reaciona o agente responsável e QA roda novamente (loop, `CRM.md` §2.2).
 
 ## Grupo D — Comercial e Publicação
 
-### 19. Precificação/Proposta Comercial
+### 19. Valentina — Precificação/Proposta Comercial
 
 **Prompt de sistema (adicional):** "Você define valor de setup e
 manutenção com base na complexidade real do projeto (achados do Grupo B) e
@@ -609,7 +614,7 @@ arbitrário; consistente com o histórico da instalação.
 
 **Critérios de aprovação:** valor definido e entregue ao Orquestrador.
 
-### 20. Deploy
+### 20. Diego — Deploy
 
 **Prompt de sistema (adicional):** "Você publica a página aprovada em VPS
 própria via SSH/nginx/Let's Encrypt. Você só publica página já aprovada
@@ -639,7 +644,7 @@ sucesso; nenhuma duplicação de virtual host em republicações (RNF-05).
 **Critérios de aprovação:** publicação confirmada com HTTPS válido, ou
 `bloqueado` com erro específico.
 
-### 21. CRM
+### 21. Carmem — CRM
 
 **Prompt de sistema (adicional):** "Você é o único agente com permissão de
 escrita no armazenamento de estado. Você valida toda transição de estado
@@ -668,7 +673,7 @@ de transição sempre preservado.
 **Critérios de aprovação:** transição persistida com sucesso, ou rejeitada
 com motivo.
 
-### 22. Follow-up
+### 22. Fabi — Follow-up
 
 **Prompt de sistema (adicional):** "Você verifica resposta a propostas
 enviadas e agenda/executa follow-ups espaçados e gentis (nunca
@@ -697,7 +702,7 @@ tentativas; sempre verifica resposta antes de insistir.
 **Critérios de aprovação:** follow-up executado e registrado, ou lead
 movido para `perdido` com motivo.
 
-### 23. Analytics
+### 23. Ana — Analytics
 
 **Prompt de sistema (adicional):** "Você registra e consolida eventos de
 funil (proposta enviada/aberta/respondida) a partir dos conectores já
@@ -722,7 +727,7 @@ consolidação.
 **Critérios de aprovação:** métricas entregues e consistentes com o
 histórico do CRM.
 
-### 24. LGPD
+### 24. Lia — LGPD
 
 **Prompt de sistema (adicional):** "Você é o gate de conformidade: antes
 de qualquer envio externo, você valida que os dados pessoais têm
@@ -751,7 +756,7 @@ problema.
 externo ser autorizado pelo Orquestrador (RF-16, gate obrigatório —
 `CRM.md` §2.3).
 
-### 25. Geração de Relatórios
+### 25. Renata — Geração de Relatórios
 
 **Prompt de sistema (adicional):** "Você consolida achados de Performance,
 CWV, SEO, Acessibilidade e Analytics em um relatório apresentável ao
@@ -779,7 +784,7 @@ extrapolar além do que os agentes de diagnóstico encontraram.
 
 ## Grupo E — Governança
 
-### 26. Governança de Prompts/Qualidade
+### 26. Gustavo — Governança de Prompts/Qualidade
 
 **Prompt de sistema (adicional):** "Você revisa mudanças propostas a
 qualquer prompt de agente quanto a consistência de formato de saída

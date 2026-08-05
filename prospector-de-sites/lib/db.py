@@ -75,7 +75,7 @@ def obter_lead(caminho_db, slug):
 
 def listar_leads(caminho_db, nicho=None, cidade=None):
     """Lista leads (slug, nome) filtrando por nicho/cidade — usado pelo
-    agente `prospeccao`, via Orquestrador, para não duplicar leads já
+    agente `iris`, via Orquestrador, para não duplicar leads já
     existentes no CRM na mesma busca (docs/AGENTES.md §3, RF-04)."""
     c = conectar(caminho_db)
     c.row_factory = sqlite3.Row
@@ -94,7 +94,7 @@ def listar_leads(caminho_db, nicho=None, cidade=None):
     return rows
 
 
-def atualizar_estado(caminho_db, slug, novo_estado, dados=None, agente='crm', motivo=None):
+def atualizar_estado(caminho_db, slug, novo_estado, dados=None, agente='carmem', motivo=None):
     """Valida a transição de estado (docs/CRM.md §2.3) e persiste.
 
     `dados` é um dict com os demais campos de `leads` a gravar junto (ex.:
@@ -143,6 +143,26 @@ def atualizar_estado(caminho_db, slug, novo_estado, dados=None, agente='crm', mo
     lead = dict(c.execute('SELECT * FROM leads WHERE slug=?', (slug,)).fetchone())
     c.close()
     return {'ok': True, 'lead': lead}
+
+
+def registrar_interacao_manual(caminho_db, slug, de_status, para_status, motivo=None):
+    """Registra em `interacoes` uma mudança de status feita por edição
+    humana direta no dashboard (drag-and-drop/formulário), SEM validar
+    contra `TRANSICOES_VALIDAS` — é um canal de override intencional do
+    operador, não uma transição de agente (docs/PLANO_IMPLEMENTACAO.md
+    §12, gap encontrado na Fase 8 e fechado na Fase 9: antes disso, edição
+    manual não deixava rastro de auditoria). Chamado por
+    `dashboard-server.py`, não pelos agentes."""
+    if de_status == para_status:
+        return
+    c = conectar(caminho_db)
+    c.execute(
+        'INSERT INTO interacoes (lead_slug, de_status, para_status, agente, motivo, criado_em) '
+        'VALUES (?,?,?,?,?,?)',
+        (slug, de_status, para_status, 'operador (dashboard)', motivo, _agora()),
+    )
+    c.commit()
+    c.close()
 
 
 def registrar_execucao(caminho_db, agente, lead_slug, status, resumo,
@@ -264,8 +284,8 @@ def ultimo_gbp_snapshot(caminho_db, lead_slug):
 
 def registrar_estetica(caminho_db, lead_slug, paleta, tipografia, layout_hero):
     """Grava a direção estética usada num redesign (Grupo C, Fase 4) —
-    consultada por `listar_estetica_recente` para os agentes `ux-ui` e
-    `branding` não repetirem paleta/tipografia/layout de hero de clientes
+    consultada por `listar_estetica_recente` para os agentes `nina` e
+    `bruna` não repetirem paleta/tipografia/layout de hero de clientes
     recentes (regra já vigente na v2 com `ui-ux-pro-max`)."""
     c = conectar(caminho_db)
     c.execute(
@@ -297,7 +317,7 @@ def atualizar_campos(caminho_db, slug, dados, agente):
     """Atualiza campos do lead SEM transição de estado — diferente de
     `atualizar_estado`: não valida contra `TRANSICOES_VALIDAS` nem grava
     em `interacoes` (não é uma mudança de estado do funil). Uso típico:
-    o agente `deploy` registrando `urlNova`/`https_validado_em` num lead
+    o agente `diego` registrando `urlNova`/`https_validado_em` num lead
     que permanece `pagina_revisada` (a transição para `fechado` acontece
     depois, por assinatura de contrato — docs/CRM.md §3).
 
@@ -323,7 +343,7 @@ def atualizar_campos(caminho_db, slug, dados, agente):
 
 
 def registrar_proposta(caminho_db, lead_slug, valor_setup, valor_manutencao, justificativa):
-    """Grava uma proposta comercial (agente `precificacao-proposta`),
+    """Grava uma proposta comercial (agente `valentina`),
     ainda não enviada (`enviado_em` fica NULL até `marcar_proposta_enviada`).
     Também espelha `valor_setup` em `leads` (mesmo padrão já usado por
     `manutencao`, para leitura rápida no dashboard). Retorna o id da
@@ -362,7 +382,7 @@ def marcar_proposta_enviada(caminho_db, lead_slug):
 
 def registrar_lgpd_checklist(caminho_db, lead_slug, campo, finalidade, retencao, aprovado):
     """Grava o veredito de conformidade LGPD de um campo de dado pessoal
-    (agente `lgpd`). Cada chamada grava uma NOVA linha (histórico); só a
+    (agente `lia`). Cada chamada grava uma NOVA linha (histórico); só a
     mais recente por campo conta (ver `lgpd_status`)."""
     c = conectar(caminho_db)
     c.execute(
@@ -440,7 +460,7 @@ def listar_leads_para_followup(caminho_db, dias_sem_resposta=3, limite_tentativa
     follow-up anterior), e com menos de `limite_tentativas` follow-ups já
     feitos. Cada item: {slug, status, tentativas_ja_feitas,
     dias_sem_resposta}. Não dispara nada — só identifica candidatos; quem
-    chama decide se envia (agente `follow-up`) e persiste o resultado.
+    chama decide se envia (agente `fabi`) e persiste o resultado.
     """
     c = conectar(caminho_db)
     c.row_factory = sqlite3.Row
@@ -485,7 +505,7 @@ def listar_leads_para_followup(caminho_db, dias_sem_resposta=3, limite_tentativa
 
 def metricas_funil(caminho_db):
     """Consolida métricas de funil a partir de propostas/followups/leads
-    (agente `analytics`, docs/AGENTES.md §23) — não interpreta os dados,
+    (agente `ana`, docs/AGENTES.md §23) — não interpreta os dados,
     só consolida contagens/médias já existentes."""
     c = conectar(caminho_db)
     total_propostas = c.execute(
@@ -517,7 +537,7 @@ def metricas_funil(caminho_db):
 
 
 def registrar_versao_prompt(caminho_db, agente, versao, hash_prompt, aprovado_em=None, observacoes=None):
-    """Grava uma versão de prompt de agente (agente `governanca-prompts`,
+    """Grava uma versão de prompt de agente (agente `gustavo`,
     docs/AGENTES.md §26). Cada mudança de prompt gera uma nova linha —
     histórico completo, nunca sobrescreve."""
     c = conectar(caminho_db)
