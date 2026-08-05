@@ -44,7 +44,7 @@ e reinicie o app — a versão certa é a **3.0.0** (confira em Gerenciar plugin
 
 ## Requisitos
 
-Claude Cowork · extensão Claude in Chrome · conectores Gmail e Google Drive · VPS própria com nginx e domínio apontado (acesso SSH) · Python (para o dashboard e o publicador) · Windows ou Mac.
+Claude Cowork · extensão Claude in Chrome · conectores Gmail e Google Drive · VPS própria com Docker (Traefik + Portainer) e domínio apontado (acesso SSH) · Python (para o dashboard e o publicador) · Windows ou Mac.
 
 ## Manual
 

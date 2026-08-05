@@ -28,8 +28,11 @@ CRM = Carmem) — glossário completo em `docs/AGENTES.md`.
    não uma API HTTP.
 5. Migração de schema é sempre **aditiva** (RF-19) — nunca `DROP`/recriação
    destrutiva.
-6. Deploy é **VPS própria via SSH/nginx/Let's Encrypt**; o caminho
-   HostGator/cPanel/FTP da v2 é descontinuado como alvo principal.
+6. Deploy é **VPS própria via SSH/SCP**, servindo o conteúdo publicado por
+   uma pilha Docker (Traefik + Portainer + imagem própria
+   `prospector-sites`, `docs/PLANO_IMPLEMENTACAO.md` §14/Fase 10) que
+   emite e renova HTTPS automaticamente; o caminho HostGator/cPanel/FTP da
+   v2 foi descontinuado e removido (Fase 9).
 
 ## 2. Módulos (estrutura de arquivos proposta)
 
@@ -85,7 +88,7 @@ prospector-de-sites/
 │   ├── db.py                        # acesso único ao SQLite (só o agente CRM chama)
 │   ├── migrations.py                # runner de migração idempotente (ver §4.4)
 │   ├── fila.py                      # fila local (ver §5)
-│   ├── ssh_deploy.py                # publicação VPS (SSH/nginx/Let's Encrypt)
+│   ├── ssh_deploy.py                # publicação VPS via SSH/SCP (destino: volume do container prospector-sites)
 │   └── auditlog.py                  # gravação do log de execuções (ver §10)
 ├── dashboard-server.py              # evoluído: novos endpoints (§8.3)
 ├── dashboard-template.html
@@ -353,7 +356,7 @@ Google Sheets/Drive continuam sendo o destino de exportação de leads
 | Claude in Chrome (navegador) | Google Maps, inspeção de sites concorrentes, Google Business Profile | Prospecção, Qualificação, Auditoria Técnica, SEO/SEO Local/Performance/CWV/Acessibilidade, Inteligência Competitiva, GBP, Branding (extração de ativos) |
 | Conector Gmail (MCP) | Envio de proposta/follow-up, detecção de resposta | Copywriting, Follow-up, Analytics |
 | Conector Google Drive (MCP) | Exportação de planilha de leads | Prospecção, CRM |
-| SSH (VPS do operador/cliente) | Publicação, configuração nginx, certificado Let's Encrypt | Deploy |
+| SSH (VPS do operador/cliente) | Publicação (SCP para o volume do container `prospector-sites`); Traefik cuida do certificado Let's Encrypt automaticamente | Deploy |
 | `ui-ux-pro-max-cli` (npx, third-party) | Geração de variedade de paleta/tipografia | Branding |
 | `python-docx` (pip) | Geração de contrato bloqueado | Copywriting (conteúdo) / CRM (persistência do estado do contrato) |
 
@@ -407,7 +410,7 @@ evoluído com novos endpoints somando-se aos já existentes
 | Front-end | Sonnet | Geração de código HTML/CSS/JS |
 | QA | Sonnet | Precisa pegar regressões sutis |
 | Precificação/Proposta Comercial | Haiku | Cálculo + regras |
-| Deploy | Sonnet | Troubleshooting de SSH/nginx exige raciocínio |
+| Deploy | Sonnet | Troubleshooting de SSH/Docker/Traefik exige raciocínio |
 | CRM | Haiku | Validação/persistência determinística |
 | Follow-up | Haiku | Regras de agendamento |
 | Analytics | Haiku | Consolidação de eventos |

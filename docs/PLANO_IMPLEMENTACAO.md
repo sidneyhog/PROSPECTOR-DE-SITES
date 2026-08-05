@@ -8,7 +8,7 @@ especificado nas Etapas 1–6 em fases pequenas, testáveis e reversíveis.
 cada fase abaixo só começa mediante aprovação explícita, fase a fase, como
 já ocorreu com cada etapa de documentação.
 
-Status: **aprovado — Fases 0 a 9 implementadas** (deploy-hostgator removido; VPS própria é o único caminho de publicação)
+Status: **aprovado — Fases 0 a 10 implementadas** (deploy-hostgator removido; VPS própria é o único caminho de publicação; hospedagem containerizada com Docker/Traefik/Portainer desde a Fase 10)
 (ver `docs/AGENTES.md` para o glossário de nomes próprios dos agentes,
 adotado na Fase 9).
 
@@ -47,6 +47,7 @@ adotado na Fase 9).
 | Onda 5 — Relacionamento | Fase 6, Fase 7 |
 | Onda 6 — Fechamento do ciclo | Fase 8 |
 | (descomissionamento, fora do roadmap original) | Fase 9 |
+| (infraestrutura de hospedagem, fora do roadmap original) | Fase 10 |
 
 ## 3. Fase 0 — Fundação técnica sem mudança funcional
 
@@ -311,7 +312,82 @@ bloco `hostgator{}` no próprio arquivo local não são afetadas pela remoção
 do código (o dashboard simplesmente para de ler/gravar esse bloco); o
 runbook de VPS orienta preencher o bloco `vps{}` via `/setup`.
 
-## 13. Sobre testes automatizados (recomendação, não bloqueante)
+## 13. Fase 10 — Containerização do deploy VPS (Docker/Traefik/Portainer)
+
+**Objetivo.** Trocar a hospedagem manual (nginx + certbot instalados
+diretamente no sistema operacional da VPS, Fase 5) por uma pilha Docker,
+decisão do operador ao provisionar sua VPS Hostinger: Traefik como proxy
+reverso com emissão/renovação automática de certificado Let's Encrypt por
+container (sem `certbot` manual por domínio), Portainer como interface
+visual de gestão dos containers, e uma imagem própria — **`prospector-sites`**
+— que serve os sites de clientes publicados.
+
+**Por que depois da Fase 9, não durante a Fase 5**: a decisão de usar
+Docker/Traefik/Portainer foi tomada pelo operador só agora, depois que a
+VPS Hostinger ficou disponível — a Fase 5 original (SSH/nginx bare-metal)
+já estava correta para a informação que existia então. O princípio de
+reversibilidade (§1.6) se aplica aqui também: a opção nginx+certbot
+bare-metal continua documentada (`docs/RUNBOOK_VPS.md` §6) para quem não
+quiser rodar Docker na VPS.
+
+**O que muda / o que não muda.**
+- **Não muda**: a publicação em si (`skills/deploy-vps/`, `lib/ssh_deploy.py`,
+  os 3 métodos de publicação, a verificação obrigatória de HTTPS) — o
+  `/publicar` continua gravando arquivos numa pasta do host via SSH/SCP,
+  sem nenhuma alteração de código. `caminhoRemoto` no `prospector-config.json`
+  continua existindo com o mesmo significado (a pasta que serve como raiz
+  do site) — só passa a ser, tecnicamente, uma pasta montada como volume
+  num container em vez do docroot direto do nginx do sistema.
+- **Muda**: como essa pasta é servida publicamente com HTTPS. Em vez de
+  nginx + certbot instalados no SO e configurados manualmente por domínio,
+  uma pilha `docker compose` (3 serviços: `traefik`, `portainer`,
+  `prospector-sites`) cuida disso — emissão/renovação de certificado
+  automática, sem comando manual por cliente.
+
+**Entregas.**
+- `skills/deploy-vps/references/docker/` (novo): `Dockerfile` (imagem
+  `prospector-sites`, baseada em `nginx:1.27-alpine` com config mínima de
+  segurança/gzip), `nginx.conf`, `docker-compose.yml` (traefik + portainer
+  + prospector-sites) e `.env.example`.
+- `docs/RUNBOOK_VPS.md` reescrito (§2-5): instalação do Docker, cópia da
+  pilha para a VPS via SCP, preenchimento do `.env`, `docker compose up -d`
+  — substitui os passos manuais de nginx/certbot (mantidos como alternativa
+  reversível no novo §6 do runbook).
+- `skills/deploy-vps/SKILL.md`, `agents/bia.md`, `agents/diego.md`,
+  `commands/publicar.md`, `commands/redesenhar.md`,
+  `docs/ARQUITETURA_TECNICA.md` §1/§2/§8.2/§9: referências a "nginx +
+  certbot" como mecanismo único de HTTPS atualizadas para "Docker +
+  Traefik + Portainer" como caminho recomendado (nginx bare-metal
+  permanece documentado como alternativa).
+
+**Sobre publicar a imagem num registry (Docker Hub):** avaliado e
+descartado por ora — não é necessário. A imagem `prospector-sites` é
+simples o suficiente (um `Dockerfile` de poucas linhas sobre
+`nginx:alpine`) para ser construída direto na VPS com `docker compose up
+-d --build`, a partir dos mesmos arquivos que o `/setup` já distribui na
+pasta conectada do operador (mesma lógica de distribuição já usada para
+`publicar-agora.ps1`/`.command` etc., `docs/ARQUITETURA_TECNICA.md` §2).
+Isso evita depender de uma conta no Docker Hub (mantém o princípio de
+"sem infraestrutura própria além do necessário", PRD §13) e evita expor a
+imagem publicamente sem necessidade. Se o operador criar múltiplas VPS ou
+quiser distribuir a imagem sem reconstruir localmente em cada uma, publicar
+`prospector-sites` num registry (Docker Hub ou GHCR) é uma opção reversível
+a reavaliar depois, sem impacto no restante da arquitetura.
+
+**Critério de aceite.** `docker compose up -d` na VPS sobe os 3 containers
+saudáveis (`docker compose ps` sem restart loops); acessar
+`https://[dominio]/[pastaBase]/teste/` (teste de conexão do `/setup`)
+responde com HTTPS válido emitido automaticamente pelo Traefik, sem
+nenhum comando `certbot` manual; publicar um segundo cliente não exige
+nenhuma alteração na pilha (mesmo container, mesma pasta montada).
+
+**Reversibilidade.** A pilha Docker pode ser derrubada
+(`docker compose down`) e substituída por nginx+certbot bare-metal
+(`docs/RUNBOOK_VPS.md` §6) sem alterar `skills/deploy-vps/` nem
+`lib/ssh_deploy.py` — a interface entre o plugin e a VPS continua sendo
+"uma pasta que serve HTTPS", independente do que está por trás dela.
+
+## 14. Sobre testes automatizados (recomendação, não bloqueante)
 
 O repositório hoje não tem nenhuma suíte de testes nem CI (achado da
 exploração inicial). Para não introduzir dependência de infraestrutura
@@ -329,7 +405,7 @@ fora do escopo desta v3.
 ## Conclusão da documentação
 
 Com a aprovação deste documento, encerram-se as Etapas 1–7 exigidas antes
-de qualquer implementação. A partir daqui, cada fase (§3 a §12) é executada
+de qualquer implementação. A partir daqui, cada fase (§3 a §13) é executada
 e reportada individualmente, com aprovação explícita entre uma fase e a
 próxima — o mesmo padrão de gate já usado durante toda a produção destes
 sete documentos.

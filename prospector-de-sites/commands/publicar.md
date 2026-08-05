@@ -1,5 +1,5 @@
 ---
-description: Publica as páginas revisadas em VPS própria (SSH/nginx/Let's Encrypt) e retorna as URLs públicas
+description: Publica as páginas revisadas em VPS própria (SSH/SCP + Docker/Traefik/Portainer) e retorna as URLs públicas
 argument-hint: "[nome do cliente ou todos]"
 ---
 

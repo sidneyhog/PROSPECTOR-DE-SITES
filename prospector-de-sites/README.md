@@ -27,7 +27,7 @@ O plugin mantém um painel de controle na sua pasta: `prospector.db` (banco SQLi
 - Extensão Claude in Chrome conectada (prospecção no Maps e fallback de deploy)
 - Conector do Gmail (rascunhos de proposta)
 - Pasta conectada no Cowork (armazena config, leads e sites)
-- VPS própria com nginx e domínio apontando pra ela (acesso SSH, de preferência por chave)
+- VPS própria com Docker (Traefik + Portainer, ver `docs/RUNBOOK_VPS.md`) e domínio apontando pra ela (acesso SSH, de preferência por chave)
 
 ## Onde ficam os dados
 
