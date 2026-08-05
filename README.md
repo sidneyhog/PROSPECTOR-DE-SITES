@@ -103,15 +103,15 @@ de configurar a VPS do zero: [`docs/RUNBOOK_VPS.md`](docs/RUNBOOK_VPS.md).
 
 **No Claude Code:**
 ```
-/plugin marketplace add ArrecheNeto/PROSPECTOR-DE-SITES
-/plugin install prospector-de-sites@arrecheneto-plugins
+/plugin marketplace add sidneyhog/PROSPECTOR-DE-SITES
+/plugin install prospector-de-sites@prospector-platform
 ```
 
 ## 🔄 Já tem o plugin e não atualiza?
 
 Re-adicionar o link NÃO atualiza (fica em cache). Faça:
 ```
-/plugin marketplace update arrecheneto-plugins
+/plugin marketplace update prospector-platform
 ```
 e reinicie o app — a versão certa é a **3.0.0** (confira em Gerenciar plugins). Se não subir: desinstale o plugin → remova o marketplace → feche o app → adicione e instale de novo. A atualização é automática (autoUpdate ativado).
 
@@ -138,7 +138,3 @@ implementação — cada documento cobre uma camada:
 ## Manual do usuário
 
 O `/setup` entrega o [manual completo](prospector-de-sites/manual.html) na sua pasta — passo a passo de tudo, incluindo a seção "E no Mac?" e os problemas comuns.
-
----
-
-Feito por **Helio Arreche** · [YouTube](https://youtube.com/@helioarreche) · [Instagram @helioarreche](https://instagram.com/helioarreche) · Série completa do plugin no canal 🎬

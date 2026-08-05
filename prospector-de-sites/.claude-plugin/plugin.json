@@ -1,9 +1,9 @@
 {
   "name": "prospector-de-sites",
   "version": "3.0.0",
-  "description": "COMECE PELO /setup (2 min, uma vez só). Plataforma multi-agente de prospecção: encontra negócios bem avaliados com sites ruins no Google Maps, redesenha as páginas com estética premium, publica em VPS própria (SSH/nginx/Let's Encrypt) e envia proposta anti-spam por e-mail via Gmail, com follow-up automático e gate de LGPD. Leads em CRM local (kanban, contratos e financeiro).",
+  "description": "COMECE PELO /setup (2 min, uma vez só). Plataforma multi-agente de prospecção: encontra negócios bem avaliados com sites ruins no Google Maps, redesenha as páginas com estética premium, publica em VPS própria (SSH/SCP + Docker/Traefik, HTTPS automático) e envia proposta anti-spam por e-mail via Gmail, com follow-up automático e gate de LGPD. Leads em CRM local (kanban, contratos e financeiro).",
   "author": {
-    "name": "Helio Arreche"
+    "name": "sidneyhog"
   },
   "keywords": [
     "prospeccao",

@@ -1,10 +1,10 @@
 {
-  "name": "arrecheneto-plugins",
+  "name": "prospector-platform",
   "owner": {
-    "name": "Helio Arreche"
+    "name": "sidneyhog"
   },
   "metadata": {
-    "description": "Plugins de IA para negócios do Helio Arreche",
+    "description": "Plataforma multi-agente de prospecção e venda de sites, orquestrada nativamente no Claude Code",
     "version": "3.0.0",
     "autoUpdate": true
   },
@@ -12,9 +12,9 @@
     {
       "name": "prospector-de-sites",
       "source": "./prospector-de-sites",
-      "description": "Plataforma multi-agente de prospecção com CRM local: encontra negócios bem avaliados com sites ruins no Google Maps, redesenha as páginas com estética premium (editor visual + comparador antes/depois), publica em VPS própria sozinho (SSH/nginx/Let's Encrypt + HTTPS verificado), envia proposta anti-spam com página-capa personalizada via Gmail respeitando gate de LGPD, faz follow-up, lê as respostas e gera contrato em Word travado — tudo administrado num dashboard local com kanban e financeiro. Comece pelo /setup.",
+      "description": "Plataforma multi-agente de prospecção com CRM local: encontra negócios bem avaliados com sites ruins no Google Maps, redesenha as páginas com estética premium (editor visual + comparador antes/depois), publica em VPS própria sozinho (SSH/SCP + Docker/Traefik + HTTPS automático), envia proposta anti-spam com página-capa personalizada via Gmail respeitando gate de LGPD, faz follow-up, lê as respostas e gera contrato em Word travado — tudo administrado num dashboard com kanban e financeiro. Comece pelo /setup.",
       "author": {
-        "name": "Helio Arreche"
+        "name": "sidneyhog"
       },
       "keywords": [
         "prospeccao",
