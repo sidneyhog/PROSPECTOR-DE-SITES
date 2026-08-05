@@ -145,6 +145,26 @@ def atualizar_estado(caminho_db, slug, novo_estado, dados=None, agente='crm', mo
     return {'ok': True, 'lead': lead}
 
 
+def registrar_interacao_manual(caminho_db, slug, de_status, para_status, motivo=None):
+    """Registra em `interacoes` uma mudança de status feita por edição
+    humana direta no dashboard (drag-and-drop/formulário), SEM validar
+    contra `TRANSICOES_VALIDAS` — é um canal de override intencional do
+    operador, não uma transição de agente (docs/PLANO_IMPLEMENTACAO.md
+    §12, gap encontrado na Fase 8 e fechado na Fase 9: antes disso, edição
+    manual não deixava rastro de auditoria). Chamado por
+    `dashboard-server.py`, não pelos agentes."""
+    if de_status == para_status:
+        return
+    c = conectar(caminho_db)
+    c.execute(
+        'INSERT INTO interacoes (lead_slug, de_status, para_status, agente, motivo, criado_em) '
+        'VALUES (?,?,?,?,?,?)',
+        (slug, de_status, para_status, 'operador (dashboard)', motivo, _agora()),
+    )
+    c.commit()
+    c.close()
+
+
 def registrar_execucao(caminho_db, agente, lead_slug, status, resumo,
                         criterios_pendentes=None, referencias=None, iniciado_em=None):
     """Grava uma linha em execucoes_agentes (log de execução — RNF-10).

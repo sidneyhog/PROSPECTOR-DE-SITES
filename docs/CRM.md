@@ -165,7 +165,14 @@ Padronizado para permitir análise agregada (alimenta Analytics/Relatórios):
    lead perdido automaticamente — só o operador, via comando explícito ao
    Orquestrador (evita reprocessamento indevido de leads descartados).
 6. **Toda transição gera uma linha em `interacoes`.** Sem exceção — é o que
-   sustenta a auditabilidade exigida em RNF-04/RNF-10.
+   sustenta a auditabilidade exigida em RNF-04/RNF-10. Isso vale também
+   para edição manual do operador no dashboard (drag-and-drop/
+   formulário): é um canal de override intencional (o operador pode mover
+   um card para qualquer coluna, sem a validação de
+   `TRANSICOES_VALIDAS` que os agentes seguem), mas continua gerando o
+   registro em `interacoes` (agente `"operador (dashboard)"`) — decisão
+   tomada na Fase 9 (`docs/PLANO_IMPLEMENTACAO.md` §12), resolvendo um gap
+   encontrado na Fase 8.
 
 ## 8. Visões do dashboard (evolução das já existentes na v2)
 

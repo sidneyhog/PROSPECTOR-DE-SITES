@@ -42,7 +42,15 @@ passo 1):
   ("conseguiu ver a página que preparei?") + o mesmo link da capa (único
   link) — sem preço, sem urgência. Passe pela checklist anti-spam da
   skill `proposta-email` antes de criar o rascunho.
-- Crie o rascunho/envie via conector Gmail (mesmo modo do config).
+- **Gate de LGPD (obrigatório e bloqueante, RF-16 — mesma regra da
+  proposta inicial, `docs/CRM.md` §2.3, `agents/lgpd.md`)**: monte o
+  payload exato de dados pessoais que vai para fora (tipicamente `nome`,
+  `email`, `whatsapp`) e peça ao Orquestrador para acionar `lgpd` antes de
+  enviar. Todo envio externo passa por este gate, não só o primeiro
+  contato — se `lgpd` bloquear, não envie o follow-up para aquele lead
+  nesta rodada; reporte o motivo e siga para o próximo elegível.
+- Crie o rascunho/envie via conector Gmail (mesmo modo do config) — só
+  depois do gate aprovar.
 - Peça ao Orquestrador para acionar `crm` →
   `registrar_followup(slug, tentativa_numero)` e persistir a transição
   (`contato_realizado`/`follow_up` → `follow_up`).

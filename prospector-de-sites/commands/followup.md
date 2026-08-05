@@ -16,9 +16,12 @@ comando, seguindo a seção "Follow-up e Analytics" de
    atingiu `limiteTentativas` (config, padrão 1 — mesmo comportamento da
    v2 de não repetir indefinidamente).
 2. Para cada elegível: `follow-up` escreve o texto (máximo 4 linhas, tom
-   gentil, sem preço, checklist anti-spam da skill `proposta-email`),
-   cria o rascunho/envia via Gmail, e o `crm` persiste
-   `contato_realizado -> follow_up` ou `follow_up -> follow_up`.
+   gentil, sem preço, checklist anti-spam da skill `proposta-email`) e
+   **passa pelo gate de LGPD (`agents/lgpd.md`, obrigatório e bloqueante
+   — mesma regra do `/proposta`, RF-16)** antes de criar o rascunho/
+   enviar via Gmail. Só se `lgpd` aprovar, o `crm` persiste
+   `contato_realizado -> follow_up` ou `follow_up -> follow_up`. Se
+   bloquear, pule aquele lead nesta rodada e reporte o motivo.
 3. Para quem já atingiu o limite sem resposta: `crm` persiste
    `follow_up -> perdido` com `motivo: "sem_resposta"`.
 

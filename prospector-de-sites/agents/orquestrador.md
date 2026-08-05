@@ -212,9 +212,12 @@ Para cada lead que `follow-up` reportar:
 
 - **Resposta detectada**: peça ao `crm` para persistir
   `contato_realizado -> negociacao` ou `follow_up -> negociacao`.
-- **Follow-up enviado**: peça ao `crm` para persistir
-  `contato_realizado -> follow_up` ou `follow_up -> follow_up` (nova
-  tentativa).
+- **Follow-up enviado**: só depois que `lgpd` aprovar o payload do envio
+  (gate obrigatório, mesma regra da proposta inicial — RF-16); peça ao
+  `crm` para persistir `contato_realizado -> follow_up` ou
+  `follow_up -> follow_up` (nova tentativa).
+- **Gate de LGPD bloqueou o follow-up**: não envie; reporte o motivo ao
+  operador; o lead permanece no estado atual (sem transição).
 - **Limite esgotado**: peça ao `crm` para persistir
   `follow_up -> perdido` com `motivo: "sem_resposta"`.
 
