@@ -35,4 +35,4 @@ Tudo na pasta conectada: `prospector-config.json` (preferências e credenciais �
 
 ## Como atualizar
 
-No chat: `/plugin marketplace update arrecheneto-plugins` e reinicie o app (versão certa: 3.0.0). Atualiza sozinho.
+No chat: `/plugin marketplace update prospector-platform` e reinicie o app (versão certa: 3.0.0). Atualiza sozinho.

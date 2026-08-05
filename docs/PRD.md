@@ -427,6 +427,27 @@ incremental.
    Etapa 7 (`PLANO_IMPLEMENTACAO.md`), com entregas pequenas, testáveis e
    reversíveis.
 
+## 20. Melhorias futuras (backlog, fora do escopo desta versão)
+
+Ideias registradas para avaliação futura — **não aprovadas, não
+planejadas em fase alguma ainda**. Ficam aqui só para não se perder.
+
+1. **Canal de contato via WhatsApp, além de e-mail** (levantado pelo
+   operador em 05/08/2026): taxa de abertura de e-mail frio é baixa;
+   WhatsApp tende a ser lido mais rápido. Risco principal identificado:
+   diferente de e-mail frio (aceitável dentro de práticas anti-spam já
+   cobertas por `agents/clarice.md`), contato frio por WhatsApp corre risco
+   real de banimento do número — tanto a API oficial (exige mensagem-
+   template pré-aprovada, não serve para abordagem espontânea) quanto
+   soluções não-oficiais tipo Evolution API (violam os termos de uso do
+   WhatsApp para esse uso). Direção sugerida a avaliar quando isso virar
+   fase: WhatsApp como canal de **follow-up** (depois que o lead já deu
+   algum sinal — abriu a página, respondeu o e-mail), não como canal do
+   primeiro contato; entraria no fluxo pelo mesmo gate de LGPD já existente
+   (`agents/lia.md`), que é agnóstico de canal. Precisaria de um agente/skill
+   novo de integração com WhatsApp (provavelmente via Evolution API
+   self-hosted, já usada pelo operador em outros projetos).
+
 ---
 
 ## Próximos passos
