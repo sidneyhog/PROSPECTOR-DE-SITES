@@ -8,7 +8,7 @@ ciclo de vida, regras de acesso, o desenho concreto de embeddings/RAG e a
 política de retenção alinhada a LGPD. Nenhum código foi alterado para
 produzir este documento.
 
-Status: **aguardando aprovação**.
+Status: **aprovado**.
 
 **Nota de nomenclatura (Fase 9):** cada agente citado aqui pela função
 técnica também tem um nome próprio humanizado (ex.: Prospecção = Íris,

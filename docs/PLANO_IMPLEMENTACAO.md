@@ -8,7 +8,7 @@ especificado nas Etapas 1–6 em fases pequenas, testáveis e reversíveis.
 cada fase abaixo só começa mediante aprovação explícita, fase a fase, como
 já ocorreu com cada etapa de documentação.
 
-Status: **aprovado — Fases 0 a 8 implementadas; Fase 9 em andamento**
+Status: **aprovado — Fases 0 a 9 implementadas** (deploy-hostgator removido; VPS própria é o único caminho de publicação)
 (ver `docs/AGENTES.md` para o glossário de nomes próprios dos agentes,
 adotado na Fase 9).
 
@@ -179,17 +179,20 @@ no PRD §2.2/§17.1.
 - `prospector-config.json`: novo bloco `vps{host, usuario, chave_ssh_path,
   dominio_padrao}`; bloco `hostgator{}` legado mantido **somente leitura**
   (nunca mais escrito), para instalações que ainda não migraram.
-- `skills/deploy-hostgator/` **não é removido nesta fase** — passa a ser
-  caminho secundário/manual, documentado no manual do usuário como legado.
+- `skills/deploy-hostgator/` **não foi removido nesta fase** — permaneceu
+  como caminho secundário/manual, documentado no manual do usuário como
+  legado, até a remoção definitiva aprovada na Fase 9 (§12).
 
 **Critério de aceite.** Publicar a página de um lead de teste em uma VPS
 de teste real via SSH resulta em HTTPS válido confirmado e
 `https_validado_em` registrado; executar o Deploy uma segunda vez sobre o
 mesmo lead (republicação) não duplica configuração nginx (RNF-05).
 
-**Reversibilidade.** `deploy-hostgator` continua existindo e funcional;
-reverter esta fase apenas remove o novo caminho, sem impacto em quem ainda
-publica via HostGator manualmente.
+**Reversibilidade.** `deploy-hostgator` continuou existindo e funcional
+durante esta fase; reverter esta fase apenas removeria o novo caminho, sem
+impacto em quem ainda publicasse via HostGator manualmente. (Nota: esse
+caminho foi removido definitivamente na Fase 9, §12 — este parágrafo
+descreve o estado da Fase 5 no momento em que foi implementada.)
 
 ## 9. Fase 6 — Comercial: Precificação, Proposta e gate de LGPD
 
@@ -257,34 +260,56 @@ no texto indexado (`MEMORIA.md` §9.4).
 **Reversibilidade.** Todas as adições são aditivas e desacopladas do
 pipeline comercial principal — reverter não interrompe prospecção → deploy.
 
-## 12. Fase 9 — Hardening e descomissionamento do legado (não automática)
+## 12. Fase 9 — Hardening e descomissionamento do legado (concluída)
 
 **Objetivo.** Só depois de todas as fases anteriores validadas em uso real
 por um período (a definir pelo operador, ex.: um ciclo comercial completo):
 avaliar a remoção definitiva do caminho `deploy-hostgator` e consolidar
 `CHANGELOG.md`.
 
-**Esta fase exige aprovação explícita e separada do operador antes de
-qualquer remoção** — nenhum caminho legado é apagado por decisão autônoma
-do sistema, conforme princípio de reversibilidade (§1.6).
+**Esta fase exigiu aprovação explícita e separada do operador antes de
+qualquer remoção** — nenhum caminho legado seria apagado por decisão
+autônoma do sistema, conforme princípio de reversibilidade (§1.6). O
+operador aprovou a remoção explicitamente (renomear os agentes primeiro,
+depois remover o legado e preparar a hospedagem VPS Hostinger).
 
-**Entregas (quando aprovado).**
-- Remoção de `skills/deploy-hostgator/` e do bloco `hostgator{}` de
-  `prospector-config.json` (com aviso prévio ao operador sobre instalações
-  que ainda dependam dele).
-- `CHANGELOG.md` consolidando o histórico de versões (hoje só rastreável
+**Entregas — parte não-destrutiva (concluída).**
+- `CHANGELOG.md` consolidando o histórico de versões (antes só rastreável
   via `git log` — `ARQUITETURA_TECNICA.md` §11).
 - Revisão de segurança final: credenciais (RNF-03), conformidade LGPD
-  ponta a ponta.
-- **Gap encontrado na Fase 8** (registrado aqui para não se perder):
+  ponta a ponta — encontrou e corrigiu 2 gaps reais (gate de LGPD ausente
+  no follow-up; risco documentado de senha em argv no publicador Windows).
+- **Gap encontrado na Fase 8, fechado nesta fase:**
   `dashboard-server.py`'s `PUT /api/leads/<slug>` (edição manual/drag-and-
-  drop no Kanban) grava direto na tabela `leads`, sem passar pela
+  drop no Kanban) gravava direto na tabela `leads`, sem passar pela
   validação de `lib/db.py::atualizar_estado` nem gravar em `interacoes`.
-  Ou seja, uma edição humana no dashboard hoje contorna a máquina de
-  estados e a trilha de auditoria que os agentes respeitam. Decidir, nesta
-  fase, se isso é um canal de override humano intencional (e então
-  documentá-lo como tal) ou se deve passar a validar/registrar como
-  qualquer outra transição.
+  Decisão: esse é um canal de override humano intencional (o operador pode
+  corrigir o Kanban livremente), mas agora sempre registra uma linha de
+  auditoria em `interacoes` com `agente='operador (dashboard)'`
+  (`docs/CRM.md` §7, regra 6).
+- 26 agentes renomeados com identidade humanizada e criativa
+  (`docs/AGENTES.md`, glossário no topo do documento).
+
+**Entregas — parte destrutiva (concluída, aprovação recebida).**
+- Remoção de `skills/deploy-hostgator/` (todos os arquivos: `SKILL.md` e
+  scripts em `references/`).
+- Remoção do bloco `hostgator{}` do `dashboard-server.py` (rotas
+  GET/PUT de `/api/config` só conhecem `vps` agora) e do painel "Conexão
+  HostGator" do `dashboard-template.html`.
+- Referências a HostGator/cPanel atualizadas para VPS em
+  `commands/publicar.md`, `commands/redesenhar.md`, `agents/atlas.md`,
+  `skills/deploy-vps/SKILL.md`, `skills/proposta-email/SKILL.md`,
+  `manual.html`, `README.md` (raiz e do plugin), `.claude-plugin/
+  plugin.json` e `.claude-plugin/marketplace.json` (versão 3.0.0).
+- Preparação para hospedagem na VPS Hostinger do operador (ver runbook em
+  `docs/RUNBOOK_VPS.md`).
+
+**Nota sobre `prospector-config.json`:** este arquivo é dado de execução
+do operador (gitignored, nunca commitado neste repositório) — não existe
+uma cópia dele para editar aqui. Instalações antigas que ainda tenham um
+bloco `hostgator{}` no próprio arquivo local não são afetadas pela remoção
+do código (o dashboard simplesmente para de ler/gravar esse bloco); o
+runbook de VPS orienta preencher o bloco `vps{}` via `/setup`.
 
 ## 13. Sobre testes automatizados (recomendação, não bloqueante)
 

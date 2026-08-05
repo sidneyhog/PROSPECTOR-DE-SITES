@@ -54,8 +54,11 @@ instalado.
 - **Se ainda não tem**: explique brevemente que precisa de (1) uma VPS com
   IP público, (2) nginx (ou apache) instalado e configurado com um
   diretório raiz para os sites, e (3) um domínio próprio que possa apontar
-  pra ela. Depois de ter isso, deve voltar e rodar `/setup` de novo. Salve
-  o config parcial e encerre com `status: precisa_input_humano`.
+  pra ela. O passo a passo completo (provisionar, instalar nginx, apontar
+  DNS, emitir certificado Let's Encrypt) está em `docs/RUNBOOK_VPS.md` —
+  ofereça guiar o usuário por ele, comando a comando, se ele tiver acesso
+  SSH à VPS e autorizar. Depois de ter isso, deve voltar e rodar `/setup`
+  de novo. Salve o config parcial e encerre com `status: precisa_input_humano`.
 - **Se já tem**: NÃO colete nenhum dado da VPS pelo chat (nem host, nem
   usuário — e JAMAIS a senha). Tudo vai num lugar só, a aba Configurações
   do dashboard:

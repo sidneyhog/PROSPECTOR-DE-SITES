@@ -7,7 +7,7 @@ máquina de estados completa, campos obrigatórios por estado, relações entre
 entidades, regras de validação de transição e as visões do dashboard.
 Nenhum código foi alterado para produzir este documento.
 
-Status: **aguardando aprovação**.
+Status: **aprovado**.
 
 ---
 

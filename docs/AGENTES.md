@@ -5,7 +5,7 @@ Orquestrador e cada agente especialista mínimo exigido, mais os agentes
 adicionais propostos e já justificados no PRD (§10). Nenhum código foi
 alterado para produzir este documento — é especificação, não implementação.
 
-Status: **aguardando aprovação**.
+Status: **aprovado**.
 
 **Nota de nomenclatura (Fase 9 de `docs/PLANO_IMPLEMENTACAO.md`):** todos os
 26 agentes têm, além da função técnica, um nome próprio humanizado — mais

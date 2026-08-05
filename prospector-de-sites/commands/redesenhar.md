@@ -59,8 +59,7 @@ A entrega final ao usuário DEVE conter, nesta ordem, sem exceção:
    `dashboard-server.py`/`dashboard-leads`.
 4. Orientação curta: `comparar.html` = antes/depois lado a lado ·
    `[slug]-editor.html` = editar textos/imagens · próximo passo:
-   `/publicar` (a implementação do agente `diego` é da Fase 5 — até lá,
-   `/publicar` segue o fluxo anterior à v3, via HostGator/cPanel).
+   `/publicar` (o agente `diego` publica em VPS própria via SSH/nginx).
 
 É PROIBIDO encerrar a resposta sem os itens 1 e 3.
 

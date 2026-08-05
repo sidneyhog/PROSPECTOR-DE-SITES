@@ -1,12 +1,12 @@
-# 🎯 Prospector de Sites — v2.1.0
+# 🎯 Prospector de Sites — v3.0.0
 
-**Plugin para Claude (Cowork) que roda o ciclo completo de prospecção e venda de sites — com CRM local incluso:**
+**Plataforma multi-agente para Claude (Cowork) que roda o ciclo completo de prospecção e venda de sites — com CRM local incluso:**
 
 **Achou → Refez → Publicou → Ofertou → Acompanhou → Fechou → Contrato.**
 
 De graça, rodando no seu computador, sem mensalidade.
 
-## O que a v2 faz
+## O que a v3 faz
 
 | Comando | O que acontece |
 |---|---|
@@ -14,7 +14,7 @@ De graça, rodando no seu computador, sem mensalidade.
 | `/prospectar` | Varre o Google Maps: negócios nota ≥ 4.7 com site fraco E e-mail público → planilha no Google Sheets + CRM |
 | `/redesenhar` | Recria as páginas com estética premium (fotos/logo/conteúdo REAIS) + editor visual + comparador antes/depois |
 | `/editor` | Edita texto e imagem da página no navegador, sem código |
-| `/publicar` | Publica na HostGator SOZINHO (publicador automático, sem cPanel) + página-capa da proposta + HTTPS validado |
+| `/publicar` | Publica na sua VPS própria SOZINHO (publicador automático via SSH) + página-capa da proposta + HTTPS validado |
 | `/proposta` | E-mail com rapport real, checklist anti-spam e a capa personalizada como link |
 | `/respostas` | Lê seu Gmail e move o card sozinho quando o cliente responde (agende diário!) |
 | `/followup` | 3+ dias sem resposta? Gera o lembrete gentil — 1 por lead, nunca repete |
@@ -40,11 +40,11 @@ Re-adicionar o link NÃO atualiza (fica em cache). Faça:
 ```
 /plugin marketplace update arrecheneto-plugins
 ```
-e reinicie o app — a versão certa é a **2.1.0** (confira em Gerenciar plugins). Se não subir: desinstale o plugin → remova o marketplace → feche o app → adicione e instale de novo. A partir da 2.1.0 a atualização é automática (autoUpdate ativado).
+e reinicie o app — a versão certa é a **3.0.0** (confira em Gerenciar plugins). Se não subir: desinstale o plugin → remova o marketplace → feche o app → adicione e instale de novo. A atualização é automática (autoUpdate ativado).
 
 ## Requisitos
 
-Claude Cowork · extensão Claude in Chrome · conectores Gmail e Google Drive · hospedagem HostGator (plano M+) · Python (para o dashboard e o publicador) · Windows ou Mac.
+Claude Cowork · extensão Claude in Chrome · conectores Gmail e Google Drive · VPS própria com nginx e domínio apontado (acesso SSH) · Python (para o dashboard e o publicador) · Windows ou Mac.
 
 ## Manual
 

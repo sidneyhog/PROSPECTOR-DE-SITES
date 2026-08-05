@@ -7,7 +7,7 @@ confirmados: **arquitetura nativa ao Claude Code, sem backend HTTP próprio,
 sem banco externo, deploy em VPS própria**. Nenhum código foi alterado para
 produzir este documento.
 
-Status: **aguardando aprovação**.
+Status: **aprovado**.
 
 **Nota de nomenclatura (Fase 9):** cada agente citado aqui pela função
 técnica também tem um nome próprio humanizado (ex.: Orquestrador = Atlas,
@@ -251,10 +251,19 @@ CREATE TABLE IF NOT EXISTS schema_version (
 
 `prospector-config.json` é mantido como formato de arquivo (compatibilidade
 com instalações existentes — RF-19), mas o campo de credencial de VPS
-**deixa de aceitar senha em texto plano** (RNF-03): passa a referenciar um
-caminho de chave SSH local. O campo legado `hostgator` permanece no arquivo
-apenas para leitura/migração (nunca mais escrito), sendo substituído por um
-bloco `vps { host, usuario, chave_ssh_path, dominio_padrao }`.
+**deixa de aceitar senha em texto plano como única opção** (RNF-03):
+passa a suportar (preferencialmente) uma chave SSH local, com senha como
+fallback. É substituído por um bloco
+`vps { host, porta, usuario, caminhoRemoto, dominio, pastaBase,
+chaveSshPath, senha }`.
+
+**Atualização (Fase 9, conclusão):** o campo legado `hostgator` foi
+removido do código (`dashboard-server.py` não lê nem grava mais esse
+bloco) — `bloco vps{}` é agora o único formato reconhecido para deploy.
+Instalações antigas que ainda tenham um bloco `hostgator{}` no próprio
+`prospector-config.json` local não quebram (o arquivo JSON pode ter campos
+extras não lidos), mas precisam preencher `vps{}` via `/setup` para
+publicar.
 
 ### 4.4 Migração de schema
 
